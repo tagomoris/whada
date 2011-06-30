@@ -5,15 +5,17 @@ use warnings;
 use Carp;
 
 sub entry {
-    # 1. get model, and convert model to dictionary-native-data (ex: filter on LDAP)
+    # 1. get credential, and convert credential to dictionary-native-data (ex: filter on LDAP)
     # 2. get and return dictionary-entry searched by 1. data, with configured fixed user/pass
+    # returns ldap entry string (success), or undef (not found)
     croak 'not implemented';
 }
 
 sub authenticate {
-    # 1. get model, and convert model to dictionary-native-data (ex: filter on LDAP)
+    # 1. get credential, and convert credential to dictionary-native-data (ex: filter on LDAP)
     # 2. check authentication with passed user/pass in 1. data
     # 3. get and return dictionary-entry searched by 1. data with authenticated account
+    # returns ldap entry string (success) or undef (access denied)
     croak 'not implemented';
 }
 

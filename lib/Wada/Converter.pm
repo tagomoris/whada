@@ -4,11 +4,13 @@ use strict;
 use warnings;
 use Carp;
 
-sub ldapfilter_to_model {
+use Wada::Credential;
+
+sub ldapfilter_to_credential {
     croak "not implemented";
 }
 
-sub model_to_ldapfilter {
+sub credential_to_ldapfilter {
     croak "not implemented";
 }
 
