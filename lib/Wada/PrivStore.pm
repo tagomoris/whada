@@ -30,6 +30,7 @@ sub check {
         shift; # throw package_name away
     }
     my $credential = shift;
+    my $priv = $credential->privilege;
     my $type = privType($credential->privilege);
     my $privs = privileges($credential);
 
