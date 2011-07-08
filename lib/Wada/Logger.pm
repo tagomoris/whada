@@ -5,7 +5,6 @@ use warnings;
 use Carps;
 
 use File::Stamped;
-use Log::Minimal;
 
 sub new {
     my $this = shift;
