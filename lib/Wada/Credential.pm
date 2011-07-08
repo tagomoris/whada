@@ -8,9 +8,6 @@ sub new {
     my $this = shift;
     my $args = shift;
     my $self = {};
-    if ($args->{domain}) {
-        $self->{domain} = $args->{domain};
-    }
     if ($args->{username}) {
         $self->{username} = $args->{username};
     }
@@ -20,8 +17,8 @@ sub new {
     if ($args->{mail}) {
         $self->{mail} = $args->{mail};
     }
-    if ($args->{privilege}) { #TODO privileges ?
-        $self->{privilage} = $args->{privilege};
+    if ($args->{privilege}) {
+        $self->{privilege} = $args->{privilege};
     }
     return bless $self, $this;
 }
@@ -43,7 +40,6 @@ sub mail {
     return shift->{mail};
 }
 
-#TODO privilege or privileges ?
 sub privilege {
     return shift->{privilege};
 }
