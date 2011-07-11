@@ -79,7 +79,13 @@ sub drive {
         $logger->logging($credential, 'successed');
     }
     if ($authorized and $entry) {
-        $logger->logging($credential, 'authorized (without password verification)');
+        if (scalar(@$entry) > 1) {
+            $logger->logging($credential, "2 or more entries found about credential");
+            $entry = undef;
+        }
+        else {
+            $logger->logging($credential, 'authorized (without password verification)');
+        }
     }
     elsif ($authorized) {
         $logger->logging($credential, 'authentication failed');
@@ -87,7 +93,7 @@ sub drive {
     else {
         $logger->logging($credential, 'not authorized');
     }
-    return $entry;
+    return $entry && $entry->[0];
 }
 
 1;
