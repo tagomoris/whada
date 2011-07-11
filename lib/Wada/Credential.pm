@@ -6,8 +6,9 @@ use Carp;
 
 sub new {
     my $this = shift;
-    my $args = shift;
+    my $args = shift || {};
     my $self = {};
+
     if ($args->{username}) {
         $self->{username} = $args->{username};
     }
@@ -25,7 +26,7 @@ sub new {
 
 sub ident {
     my $self = shift;
-    return $self->username || $self->mail;
+    return $self->username() || $self->mail();
 }
 
 sub username {
@@ -46,7 +47,7 @@ sub privilege {
 
 sub logformat {
     my $self = shift;
-    return "[" . $self->{privilege} . "] " . $self->ident;
+    return "[" . $self->{privilege} . "] " . $self->ident();
 }
 
 1;
