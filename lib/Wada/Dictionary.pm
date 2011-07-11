@@ -4,6 +4,12 @@ use strict;
 use warnings;
 use Carp;
 
+sub new {
+    my $this = shift;
+    my $conf = shift || {};
+    return bless {config => $conf}, $this;
+}
+
 sub entry {
     # 1. get credential, and convert credential to dictionary-native-data (ex: filter on LDAP)
     # 2. get and return dictionary-entry searched by 1. data, with configured fixed user/pass
