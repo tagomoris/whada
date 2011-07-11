@@ -53,7 +53,7 @@ sub drive {
         $authorized = 1;
         $entry = $sub->($credential);
     }
-    elsif (defined(authorized_check)) {
+    elsif (defined($authorized_check)) {
         # not authorized
         $entry = undef;
     }

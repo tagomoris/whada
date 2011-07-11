@@ -2,7 +2,7 @@ package Wada::Logger;
 
 use strict;
 use warnings;
-use Carps;
+use Carp;
 
 use File::Stamped;
 
@@ -17,8 +17,7 @@ sub logging {
     my $self = shift;
     my ($credential, $message) = @_;
 
-    my ($sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst) =
-        localtime(time);
+    my ($sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst) = localtime(time);
     my $time = sprintf(
         "%04d-%02d-%02dT%02d:%02d:%02d",
         $year + 1900,
@@ -28,7 +27,7 @@ sub logging {
     # 2010-10-20T00:25:17 slapd [BTSUPDATE] tagomoris: not authorized
     # 2010-10-20T00:25:19 OAuth [DEPLOY] daisukem: success
     # 2010-10-20T00:25:21 OpenID [CISETTING] azuma: authentication failed
-    print $self->{fh} $time, " ", $self->{handler}, " ", $credential->logformat, ":", $message, "\n";
+    print { $self->{fh} } $time, " ", $self->{handler}, " ", $credential->logformat, ":", $message, "\n";
 }
 
 1;
