@@ -2,13 +2,11 @@ package Wada::SlapdBackendHandler;
 
 use strict;
 use warnings;
-
 use Carp;
-use List::Util qw/reduce/;
 
 sub new {
     my $class = shift;
-    return bless {coverter => $converter}, $class;
+    return bless {}, $class;
 }
 
 sub init {
