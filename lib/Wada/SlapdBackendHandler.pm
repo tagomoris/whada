@@ -21,6 +21,12 @@ sub compare {
     croak "not implemented";
 }
 
+sub bind {
+    my $this = shift;
+    # you cannot bind with virtual entries.
+    return 0;
+}
+
 sub modify {
     my $this = shift;
     # you cannot do any modifications to virtual entries.
