@@ -6,17 +6,18 @@ use Carp;
 
 sub new {
     my $class = shift;
-    return bless {}, $class;
+    return bless {config => {}}, $class;
 }
 
 sub config {
     my $this = shift;
-    my @args = @_;
+    my ($param, $value) = @_;
+    return 0 if $param !~ /^wadaBackend(.+)$/;
+    $this->{config}->{lc($1)} = $value;
+
     use Data::Dumper;
     warn "===================================================";
     warn Dumper $this->{config};
-    warn "+++++++++++++++++++++++++++++++++++++++++++++++++++";
-    warn Dumper \@args;
     warn "===================================================";
     return 0;
 }
