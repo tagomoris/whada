@@ -9,6 +9,18 @@ sub new {
     return bless {}, $class;
 }
 
+sub config {
+    my $this = shift;
+    my @args = @_;
+    use Data::Dumper;
+    warn "===================================================";
+    warn Dumper $this->{config};
+    warn "+++++++++++++++++++++++++++++++++++++++++++++++++++";
+    warn Dumper \@args;
+    warn "===================================================";
+    return 0;
+}
+
 sub init {
     return 0;
 }
@@ -48,12 +60,6 @@ sub modrdn {
 sub delete {
     my $this = shift;
     # you cannot do any modifications to virtual entries.
-}
-
-sub config {
-    my $this = shift;
-    # you cannot do any modifications to virtual entries.
-    return 0;
 }
 
 1;
