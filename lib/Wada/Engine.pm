@@ -93,12 +93,6 @@ sub drive {
     else {
         $logger->logging($credential, 'not authorized');
     }
-    if ($entry) {
-        use Data::Dumper;
-        warn "=========================================================";
-        warn Dumper $entry->[0];
-        warn "=========================================================";
-    }
     return $entry && $entry->[0];
 }
 
