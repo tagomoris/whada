@@ -75,6 +75,11 @@ sub drive {
         $entry = undef;
     }
 
+    use Data::Dumper;
+    warn "=========================================================";
+    warn Dumper $entry;
+    warn "=========================================================";
+
     if ($authorized and $entry and $with_authentication) {
         $logger->logging($credential, 'successed');
     }
