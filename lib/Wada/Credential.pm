@@ -47,7 +47,7 @@ sub privilege {
 
 sub logformat {
     my $self = shift;
-    return "[" . $self->{privilege} . "] " . $self->ident();
+    return "[" . ($self->{privilege} || 'NONE') . "] " . $self->ident();
 }
 
 1;
