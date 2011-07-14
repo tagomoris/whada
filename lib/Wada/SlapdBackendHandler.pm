@@ -13,7 +13,9 @@ sub config {
     my $this = shift;
     my ($param, $value) = @_;
     return 0 if $param !~ /^wadaBackend(.+)$/;
+
     $this->{config}->{lc($1)} = $value;
+    return 0;
 }
 
 sub init {
