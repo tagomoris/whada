@@ -14,12 +14,6 @@ sub config {
     my ($param, $value) = @_;
     return 0 if $param !~ /^wadaBackend(.+)$/;
     $this->{config}->{lc($1)} = $value;
-
-    use Data::Dumper;
-    warn "===================================================";
-    warn Dumper $this->{config};
-    warn "===================================================";
-    return 0;
 }
 
 sub init {
