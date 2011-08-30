@@ -4,6 +4,8 @@ use strict;
 use warnings;
 use Carp;
 
+use Net::LDAP;
+
 sub new {
     my $class = shift;
     return bless {config => {}}, $class;
