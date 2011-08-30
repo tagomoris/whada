@@ -17,7 +17,7 @@
 #     MIN_PERL_VERSION => q[5.008008]
 #     NAME => q[Whada]
 #     NO_META => q[1]
-#     PREREQ_PM => { Test::More=>q[0], File::Stamped=>q[0], ExtUtils::MakeMaker=>q[6.42], Net::LDAP::Filter=>q[0], Net::LDAP=>q[0] }
+#     PREREQ_PM => { Scalar::Util=>q[0], File::Stamped=>q[0], Plack::Middleware::Static=>q[0], Router::Simple=>q[0], Net::LDAP::Filter=>q[0], Text::Xslate=>q[1.1003], Starman=>q[0], Text::Xslate::Bridge::TT2Like=>q[0], Try::Tiny=>q[0.09], Plack=>q[0], ExtUtils::MakeMaker=>q[6.42], Plack::Middleware::ReverseProxy=>q[0], Class::Accessor::Lite=>q[0], Cache::KyotoTycoon=>q[0], Test::More=>q[0], JSON=>q[0], Net::LDAP=>q[0], File::Basename=>q[0], Cwd=>q[0] }
 #     VERSION => q[0.01]
 #     VERSION_FROM => q[lib/Whada.pm]
 #     dist => {  }
@@ -193,7 +193,8 @@ TO_INST_PM = lib/Kossy.pm \
 	lib/Whada/Engine.pm \
 	lib/Whada/Logger.pm \
 	lib/Whada/PrivStore.pm \
-	lib/Whada/SlapdBackendHandler.pm
+	lib/Whada/SlapdBackendHandler.pm \
+	lib/WhadaAdmin.pm
 
 PM_TO_BLIB = lib/Whada/Dictionary.pm \
 	blib/lib/Whada/Dictionary.pm \
@@ -201,6 +202,8 @@ PM_TO_BLIB = lib/Whada/Dictionary.pm \
 	blib/lib/Whada/Credential.pm \
 	lib/Whada/SlapdBackendHandler.pm \
 	blib/lib/Whada/SlapdBackendHandler.pm \
+	lib/WhadaAdmin.pm \
+	blib/lib/WhadaAdmin.pm \
 	lib/Whada.pm \
 	blib/lib/Whada.pm \
 	lib/Kossy.pm \
@@ -793,9 +796,23 @@ ppd :
 	$(NOECHO) $(ECHO) '    <AUTHOR></AUTHOR>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <IMPLEMENTATION>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <PERLCORE VERSION="5,008008,0,0" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Cache::KyotoTycoon" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Class::Accessor::Lite" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Cwd::" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <REQUIRE NAME="File::Basename" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="File::Stamped" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <REQUIRE NAME="JSON::" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Net::LDAP" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Net::LDAP::Filter" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Plack::" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Plack::Middleware::ReverseProxy" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Plack::Middleware::Static" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Router::Simple" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Scalar::Util" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Starman::" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Text::Xslate" VERSION="1.1003" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Text::Xslate::Bridge::TT2Like" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Try::Tiny" VERSION="0.09" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <ARCHITECTURE NAME="darwin-2level-5.14" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <CODEBASE HREF="" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    </IMPLEMENTATION>' >> $(DISTNAME).ppd
@@ -809,6 +826,7 @@ pm_to_blib : $(FIRST_MAKEFILE) $(TO_INST_PM)
 	  lib/Whada/Dictionary.pm blib/lib/Whada/Dictionary.pm \
 	  lib/Whada/Credential.pm blib/lib/Whada/Credential.pm \
 	  lib/Whada/SlapdBackendHandler.pm blib/lib/Whada/SlapdBackendHandler.pm \
+	  lib/WhadaAdmin.pm blib/lib/WhadaAdmin.pm \
 	  lib/Whada.pm blib/lib/Whada.pm \
 	  lib/Kossy.pm blib/lib/Kossy.pm \
 	  lib/Whada/Converter.pm blib/lib/Whada/Converter.pm \
