@@ -1,11 +1,11 @@
-package Wada::Engine;
+package Whada::Engine;
 
 use strict;
 use warnings;
 use Carp;
 
-use Wada::Logger;
-use Wada::PrivStore;
+use Whada::Logger;
+use Whada::PrivStore;
 
 # check authorized or not, but not check authenticated or not.
 sub authorize {
@@ -46,7 +46,7 @@ sub authenticate {
 sub drive {
     my ($credential, $logger, $default_priv, $with_authentication, $sub) = @_;
 
-    my $authorized_check = Wada::PrivStore->check($credential);
+    my $authorized_check = Whada::PrivStore->check($credential);
     my $authorized = 0;
     my $entry;
     if (defined($authorized_check) and $authorized_check) {
@@ -66,7 +66,7 @@ sub drive {
         # not authorized
         $entry = undef;
     }
-    elsif (Wada::PrivStore->global_default_privilege) {
+    elsif (Whada::PrivStore->global_default_privilege) {
         $authorized = 1;
         $entry = $sub->($credential);
     }

@@ -1,4 +1,4 @@
-package Wada::Credential;
+package Whada::Credential;
 
 use strict;
 use warnings;

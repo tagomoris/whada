@@ -1,4 +1,4 @@
-package Wada::Logger;
+package Whada::Logger;
 
 use strict;
 use warnings;
@@ -9,7 +9,7 @@ use File::Stamped;
 sub new {
     my $this = shift;
     my ($handler, $path) = @_;
-    $path = '/var/log/wada.log.%Y%m%d' unless $path;
+    $path = '/var/log/whada.log.%Y%m%d' unless $path;
     return bless {handler => $handler, fh => File::Stamped->new(pattern => $path)}, $this;
 }
 

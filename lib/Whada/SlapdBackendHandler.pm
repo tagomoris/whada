@@ -1,4 +1,4 @@
-package Wada::SlapdBackendHandler;
+package Whada::SlapdBackendHandler;
 
 use strict;
 use warnings;

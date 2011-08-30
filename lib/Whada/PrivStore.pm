@@ -1,4 +1,4 @@
-package Wada::PrivStore;
+package Whada::PrivStore;
 
 use strict;
 use warnings;
@@ -6,8 +6,8 @@ use Carp;
 
 our @TYPES = ('always_allow', 'default_allow', 'default_deny', 'always_deny');
 # if unknown, 'check' return undef,
-# and then used default_privilege value of Wada::Engine option
-#  (or 'defined' if Wada::Engine doesn't have default_privilege).
+# and then used default_privilege value of Whada::Engine option
+#  (or 'defined' if Whada::Engine doesn't have default_privilege).
 
 sub global_default_privilege {
     return 0;

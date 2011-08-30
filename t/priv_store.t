@@ -2,29 +2,29 @@ use strict;
 use Test::More;
 use Test::Exception;
 
-use_ok "Wada::PrivStore";
-use_ok "Wada::Credential";
+use_ok "Whada::PrivStore";
+use_ok "Whada::Credential";
 
 {
-    is (Wada::PrivStore::global_default_privilege(), 0);
+    is (Whada::PrivStore::global_default_privilege(), 0);
 }
 
 {
-    is (Wada::PrivStore::privType(undef), 'always_allow');
+    is (Whada::PrivStore::privType(undef), 'always_allow');
   TODO: {
         local $TODO = "update later with properly implemented privtypes for each privileges";
     }
 }
 
 {
-    is_deeply (Wada::PrivStore::privileges({}), {});
+    is_deeply (Whada::PrivStore::privileges({}), {});
   TODO: {
         local $TODO = "update later with properly implemented store/get privileges for users";
     }
 }
 
 {
-    ok (Wada::PrivStore::check(Wada::Credential->new())); # always allowd
+    ok (Whada::PrivStore::check(Whada::Credential->new())); # always allowd
   TODO: {
         local $TODO = "PrivStore not implemented properly now.";
     }

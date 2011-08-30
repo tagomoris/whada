@@ -1,4 +1,4 @@
-package Wada;
+package Whada;
 
 use strict;
 use warnings;

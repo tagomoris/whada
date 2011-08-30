@@ -1,10 +1,10 @@
-package Wada::Converter;
+package Whada::Converter;
 
 use strict;
 use warnings;
 use Carp;
 
-use Wada::Credential;
+use Whada::Credential;
 
 sub new {
     my $this = shift;
@@ -14,7 +14,7 @@ sub new {
     return bless $self, $this;
 }
 
-# in Subclass as subclass of Wada::Converter
+# in Subclass as subclass of Whada::Converter
 #   sub credential_from_filter {};
 #   sub filter_from_credential {};
 # This converter is for SlapdBackendHandler, and LDAP another data souce.
@@ -22,7 +22,7 @@ sub new {
 #   Subclass->new(filter => $filterString)->credential();
 #   Subclass->new(credential => $credential)->filter();
 #
-# in Subclass2 as subclass of Wada::Converter
+# in Subclass2 as subclass of Whada::Converter
 #   sub credential_from_oauthobj {};
 #   sub mysqlqueryparams_from_credential {};
 # This converter is for OAuthHandler, and MySQL user-password database.

@@ -1,4 +1,4 @@
-package Wada::Dictionary;
+package Whada::Dictionary;
 
 use strict;
 use warnings;
