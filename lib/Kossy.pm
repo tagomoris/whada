@@ -17,6 +17,8 @@ use Class::Accessor::Lite (
     new => 0,
     rw => [qw/root_dir/]
 );
+use JSON;
+
 use base qw/Exporter/;
 
 our @EXPORT = qw/new root_dir psgi build_app _router _connect get post filter wrap_filter/;
@@ -263,6 +265,17 @@ sub render {
     my $body = $self->tx->render($file, \%vars);
     $self->res->status( 200 );
     $self->res->content_type('text/html; charset=UTF-8');
+    $self->res->body( $body );
+    $self->res;
+}
+
+sub render_json {
+    my $self = shift;
+    my $obj = shift;
+
+    my $body = encode_json( $obj );
+    $self->res->status( 200 );
+    $self->res->content_type('application/json;');
     $self->res->body( $body );
     $self->res;
 }
