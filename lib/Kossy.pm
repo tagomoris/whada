@@ -167,7 +167,7 @@ sub filter {
     my $class = caller;
     if ( !$_FILTER->{$class} ) {
         $_FILTER->{$class} = {};
-    }    
+    }
     if ( @_ ) {
         $_FILTER->{$class}->{$_[0]} = $_[1];
     }
