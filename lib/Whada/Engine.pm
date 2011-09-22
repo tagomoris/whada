@@ -4,7 +4,6 @@ use strict;
 use warnings;
 use Carp;
 
-use Whada::Logger;
 use Whada::PrivStore;
 
 # check authorized or not, but not check authenticated or not.
