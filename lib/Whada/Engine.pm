@@ -8,10 +8,7 @@ use Whada::PrivStore;
 
 # check authorized or not, but not check authenticated or not.
 sub authorize {
-    if (scalar(@_) > 1) {
-        shift; # throw package_name away
-    }
-    my $opts = shift;
+    my $opts = {@_};
     my $credential = $opts->{credential};
     my $dictionary = $opts->{dictionary};
     my $logger = $opts->{logger};
@@ -26,10 +23,7 @@ sub authorize {
 
 # check authorized or not, and also check authenticated or not.
 sub authenticate {
-    if (scalar(@_) > 1) {
-        shift; # throw package_name away
-    }
-    my $opts = shift;
+    my $opts = {@_};
     my $credential = $opts->{credential};
     my $dictionary = $opts->{dictionary};
     my $logger = $opts->{logger};

@@ -56,12 +56,12 @@ sub search {
     my $entry;
     try {
         my $config = $this->configurations;
-        $entry = Whada::Engine->authorize({
+        $entry = Whada::Engine->authorize(
             credential => ($this->{converter})->new({ldapquery => {base => $base, filter => $filterStr}})->credential(),
             dictionary => ($this->{dictionary})->new($this->{converter}, $config),
             logger => Whada::Logger->new('slapd', $config->{logpath}),
             default_privilege => $this->{default_privilege},
-        });
+        );
     } catch {
         print STDERR "perl backend search failed with error: $_\n";
         $entry = undef;
