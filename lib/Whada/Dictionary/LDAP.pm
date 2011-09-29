@@ -13,7 +13,7 @@ sub entry {
     my $credential = shift;
     my $config = $self->{config};
 
-    my $filter = ($config->{converter})->new({credential => $credential})->filter();
+    my $filter = ($self->{converter})->new({credential => $credential})->filter();
 
     my $ldap = Net::LDAP->new($config->{server});
 

@@ -60,7 +60,7 @@ sub search {
         warn Dumper $config;
         $entry = Whada::Engine->authorize({
             credential => ($this->{converter})->new({ldapquery => {base => $base, filter => $filterStr}})->credential(),
-            dictionary => ($this->{dictionary})->new($config),
+            dictionary => ($this->{dictionary})->new($this->{converter}, $config),
             logger => Whada::Logger->new('slapd', $config->{logpath}),
             default_privilege => $this->{default_privilege},
         });

@@ -6,8 +6,9 @@ use Carp;
 
 sub new {
     my $this = shift;
+    my $converter = shift;
     my $conf = shift || {};
-    return bless {config => $conf}, $this;
+    return bless {converter => $converter, config => $conf}, $this;
 }
 
 sub entry {
