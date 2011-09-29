@@ -56,8 +56,6 @@ sub search {
     my $entry;
     try {
         my $config = $this->configurations;
-        use Data::Dumper;
-        warn Dumper $config;
         $entry = Whada::Engine->authorize({
             credential => ($this->{converter})->new({ldapquery => {base => $base, filter => $filterStr}})->credential(),
             dictionary => ($this->{dictionary})->new($this->{converter}, $config),
