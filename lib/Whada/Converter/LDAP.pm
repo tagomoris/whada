@@ -18,14 +18,12 @@ my $ACCOUNT_FILTER_VALUE = sub {
 my $MAIL_ADDR_DOMAIN = '@example.com';
 
 sub set_ldap_specifications {
-    my $conf = shift;
+    my $conf = {@_};
     return unless $conf;
-    if ($conf->{filter} && $conf->{filter}->{attribute})
-        $ACCOUNT_FILTER_ATTRIBUTE = $conf->{filter}->{attribute};
-    if ($conf->{filter} && $conf->{filter}->{value})
-        $ACCOUNT_FILTER_VALUE = $conf->{filter}->{value};
-    if ($conf->{mail} && $conf->{mail}->{domain})
-        $MAIL_ADDR_DOMAIN = $conf->{mail}->{domain};
+
+    $ACCOUNT_FILTER_ATTRIBUTE = $conf->{filter}->{attribute} if ($conf->{filter} and $conf->{filter}->{attribute});
+    $ACCOUNT_FILTER_VALUE = $conf->{filter}->{value} if ($conf->{filter} and $conf->{filter}->{value});
+    $MAIL_ADDR_DOMAIN = $conf->{mail}->{domain} if ($conf->{mail} and $conf->{mail}->{domain});
 }
 
 # This method accepts only ldapquery,
