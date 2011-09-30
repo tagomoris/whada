@@ -44,11 +44,11 @@ sub drive {
     my $authorized_check = Whada::PrivStore->check($credential);
     my $authorized = 0;
     my $entry;
-    if (defined($authorized_check) and $authorized_check) {
+    if (defined $authorized_check and $authorized_check) {
         $authorized = 1;
         $entry = $sub->($credential);
     }
-    elsif (defined($authorized_check)) {
+    elsif (defined $authorized_check) {
         # not authorized
         $entry = undef;
     }
