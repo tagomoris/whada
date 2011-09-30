@@ -33,6 +33,7 @@ sub storage {
 
 sub global_default_privilege {
     my $p = (storage())->get('global_default_privilege');
+    return undef unless $p;
     return $p eq 'allowed';
 }
 
@@ -40,12 +41,13 @@ sub privType {
     my $priv = shift;
     my $data = (storage())->get('priv:' . $priv);
     my $p;
+    return undef unless $p;
     try {
         $p = decode_json($data);
     } catch {
-        return global_default_privilege();
+        return undef;
     };
-    return ($p->{priv_type} || global_default_privilege());
+    return $p->{priv_type};
 }
 
 sub privileges {
