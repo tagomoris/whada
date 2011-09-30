@@ -14,14 +14,19 @@ our @TYPES = ('always_allow', 'default_allow', 'default_deny', 'always_deny');
 # and then used default_privilege value of Whada::Engine option
 #  (or 'denied' if Whada::Engine doesn't have default_privilege).
 
+my $storage_conf = {};
+sub set_storage_configuration {
+    my $this = shift;
+    my ($attr, $value) = @_;
+    $storage_conf->{$attr} = $value;
+}
+
 my $storage_connection; # connection cache
 sub storage {
     my $self = shift;
     return $storage_connection if $storage_connection;
-    my $config = $self->load_config;
-    my $ktconf = $config->{storage} || {};
-    my $host = $ktconf->{host} || '127.0.0.1';
-    my $port = $ktconf->{port} || 1978;
+    my $host = $storage_conf->{host} || '127.0.0.1';
+    my $port = $storage_conf->{port} || 1978;
     $storage_connection = Cache::KyotoTycoon->new(host => $host, port => $port);
     $storage_connection;
 }
