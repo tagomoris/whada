@@ -22,6 +22,10 @@ sub set_storage_configuration {
 }
 
 my $storage_connection; # connection cache
+sub set_storage_connection {
+    shift;
+    $storage_connection = shift;
+}
 sub storage {
     my $self = shift;
     return $storage_connection if $storage_connection;
