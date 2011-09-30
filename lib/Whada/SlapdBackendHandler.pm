@@ -8,6 +8,7 @@ use Try::Tiny;
 
 use Whada::Logger;
 use Whada::Engine;
+use Whada::PrivStore;
 
 sub new {
     my $class = shift;
@@ -38,9 +39,13 @@ sub configurations {
 sub config {
     my $this = shift;
     my ($param, $value) = @_;
-    return 0 if $param !~ /^whadaBackend(.+)$/;
 
-    $this->{config}->{lc($1)} = $value;
+    if ($param =~ /^whadaBackend(.+)$/) {
+        $this->{config}->{lc($1)} = $value;
+    }
+    elsif ($param =~ /^whadaStorage(.+)$/) {
+        Whada::PrivStore->set_storage_configuration(lc($1), $value);
+    }
     return 0;
 }
 
