@@ -43,8 +43,9 @@ sub drive {
 
     my $authorized_check = Whada::PrivStore->check($credential);
     my $authorized = 0;
-    my $entry;
-    if (defined $authorized_check and $authorized_check) {
+    my $entry = undef;
+
+    if (defined $authorized_check && $authorized_check) {
         $authorized = 1;
         $entry = $sub->($credential);
     }
@@ -53,11 +54,11 @@ sub drive {
         $entry = undef;
     }
     # undef of authorized_check means unknown privilege label
-    elsif ($default_priv eq 'allowed') {
+    elsif (defined $default_priv and $default_priv eq 'allowed') {
         $authorized = 1;
         $entry = $sub->($credential);
     }
-    elsif ($default_priv eq 'denied') {
+    elsif (defined $default_priv and $default_priv eq 'denied') {
         # not authorized
         $entry = undef;
     }
