@@ -5,31 +5,33 @@ use warnings;
 use utf8;
 
 use Kossy;
-use Cache::KyotoTycoon;
 
 use WhadaAdmin::Config;
 
+use Whada::PrivStore;
 use Whada::Credential;
 
 our $VERSION = 0.01;
 
-sub load_config {
+sub config {
     my $self = shift;
     return $self->{_config} if $self->{_config};
     $self->{_config} = WhadaAdmin::Config->new($self->root_dir . '/config.json');
+    $self->storage; # create and cache storage connection...
     $self->{_config};
 }
 
-my $storage_connection; # connection cache
 sub storage {
     my $self = shift;
-    return $storage_connection if $storage_connection;
-    my $config = $self->load_config;
-    my $ktconf = $config->{storage} || {};
-    my $host = $ktconf->{host} || '127.0.0.1';
-    my $port = $ktconf->{port} || 1978;
-    $storage_connection = Cache::KyotoTycoon->new(host => $host, port => $port);
-    $storage_connection;
+    return $self->{_storage} if $self->{_storage};
+
+    my $storage_conf = $self->config->storage_params;
+    my $host = $storage_conf->{host} || '127.0.0.1';
+    my $port = $storage_conf->{port} || 1978;
+
+    $self->{_storage} = Cache::KyotoTycoon->new(host => $host, port => $port);
+    Whada::PrivStore->set_storage_connection($self->{_storage});
+    $self->{_storage};
 }
 
 filter 'check_authenticated' => sub {
