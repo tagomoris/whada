@@ -26,7 +26,7 @@ sub storage {
     my $self = shift;
     return $storage_connection if $storage_connection;
     my $host = $storage_conf->{host} || '127.0.0.1';
-    my $port = $storage_conf->{port} || 1979;
+    my $port = $storage_conf->{port} || 1978;
     $storage_connection = Cache::KyotoTycoon->new(host => $host, port => $port);
     $storage_connection;
 }
