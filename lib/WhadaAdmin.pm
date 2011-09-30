@@ -6,17 +6,18 @@ use utf8;
 
 use Kossy;
 use Cache::KyotoTycoon;
-use JSON;
+
+use WhadaAdmin::Config;
+
+use Whada::Credential;
 
 our $VERSION = 0.01;
 
 sub load_config {
     my $self = shift;
     return $self->{_config} if $self->{_config};
-    open( my $fh, '<', $self->root_dir . '/config.json') or die $!;
-    local $/;
-    my $json = <$fh>;
-    $self->{_config} = decode_json($json);
+    $self->{_config} = WhadaAdmin::Config->new($self->root_dir . '/config.json');
+    $self->{_config};
 }
 
 my $storage_connection; # connection cache
@@ -25,8 +26,8 @@ sub storage {
     return $storage_connection if $storage_connection;
     my $config = $self->load_config;
     my $ktconf = $config->{storage} || {};
-    my $host = $config->{storage}->{host} || '127.0.0.1';
-    my $port = $config->{storage}->{port} || 1978;
+    my $host = $ktconf->{host} || '127.0.0.1';
+    my $port = $ktconf->{port} || 1978;
     $storage_connection = Cache::KyotoTycoon->new(host => $host, port => $port);
     $storage_connection;
 }

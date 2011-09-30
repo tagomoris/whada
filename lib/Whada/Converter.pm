@@ -6,13 +6,22 @@ use Carp;
 
 use Whada::Credential;
 
+my $CONVERTER_GLOBAL_DEFAULT = {};
+
+sub set_global_default {
+    shift;
+    $CONVERTER_GLOBAL_DEFAULT = shift;
+}
+
 sub new {
     my $this = shift;
     my $args = shift;
     croak "invalid argument: only single key-value pair is allowed" if scalar(keys(%$args)) != 1;
-    my $self = {%$args};
+    my $self = {args => $args, conf => $CONVERTER_GLOBAL_DEFAULT};
     return bless $self, $this;
 }
+
+sub conf { (shift)->{conf}; }
 
 # in Subclass as subclass of Whada::Converter
 #   sub credential_from_filter {};
@@ -32,11 +41,11 @@ sub new {
 
 sub credential {
     my $self = shift;
-    my $material = (keys(%$self))[0];
-    croak "invalid material for credential: $material" unless $self->{$material};
+    my $material = (keys(%{$self->{args}}))[0];
+    croak "invalid material for credential: $material" unless $self->{args}->{$material};
     my $method = 'credential_from_' . $material;
     croak "undefined method: $method" unless $self->can($method);
-    return $self->$method($self->{$material});
+    return $self->$method($self->{args}->{$material});
 }
 
 sub DESTROY {
@@ -48,15 +57,15 @@ sub AUTOLOAD {
 
     $called =~ s/.*:://o;
     $called =~ s/^u_?//o;
-    my $material = (keys(%$this))[0];
-    croak "invalid material for $called: $material" unless $this->{$material};
+    my $material = (keys(%{$this->{args}}))[0];
+    croak "invalid material for $called: $material" unless $this->{args}->{$material};
     my $method = $called . '_from_' . $material;
     croak "undefined method: $method" unless $this->can($method);
 
     no strict 'refs';
     *{$AUTOLOAD} = sub {
         my $self = shift;
-        return $self->$method($self->{$material});
+        return $self->$method($self->{args}->{$material});
     };
     goto &$AUTOLOAD;
 }

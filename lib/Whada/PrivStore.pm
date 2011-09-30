@@ -4,25 +4,55 @@ use strict;
 use warnings;
 use Carp;
 
+use Cache::KyotoTycoon;
+use JSON;
+
+use Try::Tiny;
+
 our @TYPES = ('always_allow', 'default_allow', 'default_deny', 'always_deny');
 # if unknown, 'check' return undef,
 # and then used default_privilege value of Whada::Engine option
-#  (or 'defined' if Whada::Engine doesn't have default_privilege).
+#  (or 'denied' if Whada::Engine doesn't have default_privilege).
+
+my $storage_connection; # connection cache
+sub storage {
+    my $self = shift;
+    return $storage_connection if $storage_connection;
+    my $config = $self->load_config;
+    my $ktconf = $config->{storage} || {};
+    my $host = $ktconf->{host} || '127.0.0.1';
+    my $port = $ktconf->{port} || 1978;
+    $storage_connection = Cache::KyotoTycoon->new(host => $host, port => $port);
+    $storage_connection;
+}
 
 sub global_default_privilege {
-    return 0;
+    my $p = (storage())->get('global_default_privilege');
+    return $p eq 'allowed';
 }
 
 sub privType {
     my $priv = shift;
-    return 'always_allow'; #TODO
+    my $data = (storage())->get('priv:' . $priv);
+    my $p;
+    try {
+        $p = decode_json($data);
+    } catch {
+        return global_default_privilege();
+    };
+    return ($p->{priv_type} || global_default_privilege());
 }
 
 sub privileges {
-    # 'allowed', 'denied' or priv key not exists
     my $credential = shift;
-    #TODO
-    return {};
+    my $data = (storage())->get('user:' . $credential->username());
+    my $u;
+    try {
+        $u = decode_json($data);
+    } catch {
+        return {};
+    }
+    return ($u->{privileges} || {});
 }
 
 sub check {
@@ -31,7 +61,7 @@ sub check {
     }
     my $credential = shift;
     my $priv = $credential->privilege;
-    my $type = privType($credential->privilege);
+    my $type = privType($priv);
     my $privs = privileges($credential);
 
     if ($type eq 'always_allow') {

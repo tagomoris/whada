@@ -10,20 +10,37 @@ use base qw/Whada::Converter/;
 
 use Whada::Credential;
 
-my $ACCOUNT_FILTER_ATTRIBUTE = 'sAMAccountName';
-my $ACCOUNT_FILTER_VALUE = sub {
-    my $credential = shift;
-    $credential->username();
+my $CONVERTER_LDAP_DEFAULT = {
+    filter => {
+        attribute => 'sAMAccountName',
+        value => sub {
+            my $credential = shift;
+            $credential->username();
+        },
+    },
+    domain => '@example.com',
 };
-my $MAIL_ADDR_DOMAIN = '@example.com';
+sub set_global_default {
+    shift;
+    $CONVERTER_LDAP_DEFAULT = {@_};
+}
+
+sub new {
+    my $this = shift;
+    my $self = bless Whada::Converter->new(@_), $this;
+    $self->set_ldap_specifications(%{$CONVERTER_LDAP_DEFAULT});
+    $self;
+}
 
 sub set_ldap_specifications {
+    my $self = shift;
     my $conf = {@_};
     return unless $conf;
 
-    $ACCOUNT_FILTER_ATTRIBUTE = $conf->{filter}->{attribute} if ($conf->{filter} and $conf->{filter}->{attribute});
-    $ACCOUNT_FILTER_VALUE = $conf->{filter}->{value} if ($conf->{filter} and $conf->{filter}->{value});
-    $MAIL_ADDR_DOMAIN = $conf->{mail}->{domain} if ($conf->{mail} and $conf->{mail}->{domain});
+    $self->conf->{filter_attribute} = $conf->{filter}->{attribute} if ($conf->{filter} and $conf->{filter}->{attribute});
+    $self->conf->{filter_value} = $conf->{filter}->{value} if ($conf->{filter} and $conf->{filter}->{value});
+    $self->conf->{domain} = $conf->{mail}->{domain} if ($conf->{mail} and $conf->{mail}->{domain});
+    $self;
 }
 
 # This method accepts only ldapquery,
@@ -84,7 +101,7 @@ sub credential_from_ldapquery {
         }
     }
     if ($args->{username} and not $args->{mail}) {
-        $args->{mail} = $args->{username} . $MAIL_ADDR_DOMAIN;
+        $args->{mail} = $args->{username} . $self->conf->{domain};
     }
     elsif ($args->{mail} and not $args->{username}) {
         ($args->{username}) = ($args->{mail} =~ /\A([^@]+)@/)
@@ -96,7 +113,7 @@ sub credential_from_ldapquery {
 sub filter_from_credential {
     my ($self, $credential) = @_;
     croak "credential doesn't exists" unless $credential;
-    return '(' . $ACCOUNT_FILTER_ATTRIBUTE . '=' . $ACCOUNT_FILTER_VALUE->($credential) . ')';
+    return '(' . $self->conf->{filter_attribute} . '=' . $self->conf->{filter_value}->($credential) . ')';
 }
 
 1;
