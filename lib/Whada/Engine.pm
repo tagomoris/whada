@@ -17,7 +17,7 @@ sub authorize {
     croak 'dictionary not found' unless $dictionary;
     croak 'failed to init logger' unless $logger;
 
-    return drive($credential, $logger, $opts->{default_priv}, 0, sub {
+    return drive($credential, $logger, $opts->{default_privilege}, 0, sub {
                      return $dictionary->entry(shift);
                  });
 }
@@ -33,7 +33,7 @@ sub authenticate {
     croak 'dictionary not found' unless $dictionary;
     croak 'failed to init logger' unless $logger;
 
-    return drive($credential, $logger, $opts->{default_priv}, 1, sub {
+    return drive($credential, $logger, $opts->{default_privilege}, 1, sub {
                      return $dictionary->authenticate(shift);
                  });
 }
