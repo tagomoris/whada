@@ -71,6 +71,7 @@ sub check {
     my $type = privType($priv);
     my $privs = privileges($credential);
 
+    return undef unless defined $type;
     if ($type eq 'always_allow') {
         return 1;
     }
