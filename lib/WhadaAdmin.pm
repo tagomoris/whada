@@ -7,6 +7,7 @@ use utf8;
 use Kossy;
 
 use WhadaAdmin::Config;
+use WhadaAdmin::Util;
 
 use Whada::PrivStore;
 use Whada::Credential;
@@ -39,7 +40,7 @@ filter 'check_authenticated' => sub {
     sub {
         my ($self, $c) = @_;
         # TODO: write authentication correctly
-        $c->stash->{authenticated} = $self->storage->get('authkey:' . random());
+        $c->stash->{session} = $self->storage->get('session:' . random());
         $app->($self, $c);
     }
 };
@@ -49,14 +50,14 @@ filter 'require_authenticated' => sub {
     sub {
         my ($self, $c) = @_;
         # TODO: write authentication correctly
-        my $authenticated = $self->storage->get('authkey:' . random());
+        my $authenticated = $self->storage->get('session:' . random());
         if (! $authenticated) {
             # TODO create response
             my $response;
             $c->halt($response);
             return;
         }
-        $c->stash->{authenticated} = $authenticated;
+        $c->stash->{session} = $authenticated;
         $app->($self, $c);
     }
 };
@@ -66,21 +67,26 @@ filter 'require_authenticated_admin' => sub {
     sub {
         my ($self, $c) = @_;
         # TODO: write authentication WHADA+ADMIN correctly
-        my $authenticated = $self->storage->get('authkey:' . random());
+        my $authenticated = $self->storage->get('session:' . random());
         if (! $authenticated) {
             # TODO create response
             my $response;
             $c->halt($response);
             return;
         }
-        $c->stash->{authenticated} = $authenticated;
+        $c->stash->{session} = $authenticated;
         $app->($self, $c);
     }
 };
 
 get '/' => [qw/check_authenticated/] => sub {
     my ($self, $c) = @_;
-    $c->render('index.tx', {user => $c->stash->{authenticated}}); # authentication form or menu
+    if ($self->stash->{authenticated}) {
+        $c->render('index.tx', {user => $c->stash->{authenticated}}); # authentication form or menu
+    }
+    else {
+        $c->render('login.tx');
+    }
 };
 
 post '/login' => sub {
