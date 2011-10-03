@@ -44,7 +44,7 @@ sub psgi {
     $app = builder {
         enable 'ReverseProxy';
         enable 'Static',
-            path => qr!^/(?:(?:css|js|images)/|favicon\.ico$)!,
+            path => qr!^/(?:(?:css|js|images|test)/|favicon\.ico$)!,
             root => $self->{root_dir} . '/public';
         $app;
     };
@@ -60,6 +60,7 @@ sub build_app {
     #xslate
     my $tx = Text::Xslate->new(
         path => [ $self->root_dir . '/views' ],
+        cache => ($ENV{PLACK_ENV} eq 'production') ? 1 : 0,
         input_layer => ':utf8',
         module => ['Text::Xslate::Bridge::TT2Like']
     );
