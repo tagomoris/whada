@@ -5,4 +5,4 @@ if [ ! -d $DATADIR ]; then
     mkdir $DATADIR
 fi
 cd $DATADIR
-exec ktserver whadaadmin.kch
+exec ktserver 'whadaadmin.kch' 'adminsession#type=*'

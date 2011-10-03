@@ -2,11 +2,6 @@ use inc::Module::Install;
 name 'Whada';
 all_from 'lib/Whada.pm';
 
-# requires 'ModuleName';
-requires 'Net::LDAP';
-requires 'Net::LDAP::Filter';
-requires 'File::Stamped';
-
 requires 'Scalar::Util';
 requires 'Plack';
 requires 'Plack::Middleware::Static';
@@ -20,9 +15,15 @@ requires 'Text::Xslate::Bridge::TT2Like';
 requires 'Try::Tiny', 0.09;
 requires 'Class::Accessor::Lite';
 
+requires 'Net::LDAP';
+requires 'Net::LDAP::Filter';
+requires 'File::Stamped';
+
 requires 'Cache::KyotoTycoon';
 requires 'JSON';
 requires 'JSON::XS';
+
+requires 'HTTP::Session::KyotoTycoon';
 
 tests 't/*.t';
 test_requires 'Test::More';

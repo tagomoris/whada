@@ -9,6 +9,8 @@ use Try::Tiny;
 
 use JSON;
 
+use Whada::Logger;
+
 ## example
 # my $x = {
 #     load_path => [
@@ -56,17 +58,24 @@ sub new {
     return $self;
 }
 
+sub require_module {
+    my ($mod) = @_;
+    $mod =~ s/::/\//g;
+    require "$mod.pm";
+}
+
 sub load_external_modules {
     my $self = shift;
     foreach my $path (@{$self->{load_path}}) {
-        use lib $path;
+        push @INC, $path;
     }
     if ($self->{auth_source}->{type} eq 'ldap') {
         use Whada::Converter::LDAP;
         use Whada::Dictionary::LDAP;
     }
     if ($self->{auth_source}->{converter_module}) {
-        use $self->{auth_source}->{converter_module};
+        my $mod = $self->{auth_source}->{converter_module};
+        require_module $mod;
     }
 }
 
@@ -92,7 +101,7 @@ sub engine_params {
     my $dictionary;
     my $converter;
     if ($self->{auth_source} and $self->{auth_source}->{type} eq 'ldap') {
-        my $source = $config->{_config}->{auth_source};
+        my $source = $self->{auth_source};
         my $converter_module;
         if ($source->{converter_module}) {
             $converter_module = $source->{converter_module};
@@ -108,12 +117,12 @@ sub engine_params {
         });
     }
     else {
-        croak 'unknown auth_source type:' . $config->{_config}->{auth_source}->{type};
+        croak 'unknown auth_source type:' . $self->{auth_source}->{type};
     }
     return (
         credential => $credential,
         dictionary => $dictionary,
-        logger => Whada::Logger->new('WhadaWebAdmin', ($config->{logger}->{path} || '/tmp/whada.admin.log')),
+        logger => Whada::Logger->new('WhadaWebAdmin', (($self->{logger} && $self->{logger}->{path}) || '/tmp/whada.admin.log')),
         default_privilege => 'denied'
     );
 }

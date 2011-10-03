@@ -4,6 +4,11 @@ use strict;
 use warnings;
 use utf8;
 
+use Cache::KyotoTycoon;
+use HTTP::Session;
+use HTTP::Session::Store::KyotoTycoon;
+use HTTP::Session::State::Cookie;
+
 use Kossy;
 
 use WhadaAdmin::Config;
@@ -19,6 +24,7 @@ sub config {
     return $self->{_config} if $self->{_config};
     $self->{_config} = WhadaAdmin::Config->new($self->root_dir . '/config.json');
     $self->storage; # create and cache storage connection...
+    $self->session_storage;
     $self->{_config};
 }
 
@@ -29,18 +35,48 @@ sub storage {
     my $storage_conf = $self->config->storage_params;
     my $host = $storage_conf->{host} || '127.0.0.1';
     my $port = $storage_conf->{port} || 1978;
+    my $dbname = 'whadaadmin.kch';
 
-    $self->{_storage} = Cache::KyotoTycoon->new(host => $host, port => $port);
+    $self->{_storage} = Cache::KyotoTycoon->new(host => $host, port => $port, db => $dbname);
     Whada::PrivStore->set_storage_connection($self->{_storage});
     $self->{_storage};
+}
+
+sub session_storage {
+    my $self = shift;
+    return $self->{_session_storage} if $self->{_session_storage};
+
+    my $storage_conf = $self->config->storage_params;
+    my $host = $storage_conf->{host} || '127.0.0.1';
+    my $port = $storage_conf->{port} || 1978;
+    my $dbname = 'adminsession';
+    my $expires = 60; # 3 * 3600 # 3 hours
+
+    $self->{_session_storage} = HTTP::Session::Store::KyotoTycoon->new(
+        host => $host,
+        port => $port,
+        db => $dbname,
+        expires => $expires
+    );
 }
 
 filter 'check_authenticated' => sub {
     my $app = shift;
     sub {
         my ($self, $c) = @_;
-        # TODO: write authentication correctly
-        $c->stash->{session} = $self->storage->get('session:' . random());
+        my $session = HTTP::Session->new(
+            store => $self->session_storage(),
+            state => HTTP::Session::State::Cookie->new(cookie_key => 'whadaadmin_sid'),
+            request => $c->req
+        );
+        use Data::Dumper;
+        warn Dumper $session;
+        if ($session->get('logged_in')) {
+            $session->set('logged_in', 1);
+        }
+        $c->stash->{session} = $session;
+        $c->stash->{username} = undef;
+        # $c->stash->{session}->response_filter($c->res);
         $app->($self, $c);
     }
 };
@@ -49,15 +85,24 @@ filter 'require_authenticated' => sub {
     my $app = shift;
     sub {
         my ($self, $c) = @_;
-        # TODO: write authentication correctly
-        my $authenticated = $self->storage->get('session:' . random());
-        if (! $authenticated) {
-            # TODO create response
-            my $response;
-            $c->halt($response);
+        my $session = HTTP::Session->new(
+            store => $self->session_storage(),
+            state => HTTP::Session::State::Cookie->new(cookie_key => 'whadaadmin_sid'),
+            request => $c->req
+        );
+        use Data::Dumper;
+        warn Dumper $session;
+        unless ($session->get('logged_in')) {
+            warn Dumper $c->res;
+            # $session->response_filter($c->res);
+            # warn Dumper $c->res;
+            $c->halt(401, 'specified operations requires login, see /.');
             return;
         }
-        $c->stash->{session} = $authenticated;
+        $c->stash->{session} = $session;
+        $c->stash->{username} = $session->get('username');
+        $c->stash->{whada_privs} = decode_json($session->get('whada_privs') || '{}');
+        # $c->stash->{session}->response_filter($c->res);
         $app->($self, $c);
     }
 };
@@ -66,30 +111,63 @@ filter 'require_authenticated_admin' => sub {
     my $app = shift;
     sub {
         my ($self, $c) = @_;
-        # TODO: write authentication WHADA+ADMIN correctly
-        my $authenticated = $self->storage->get('session:' . random());
-        if (! $authenticated) {
-            # TODO create response
-            my $response;
-            $c->halt($response);
+        my $session = HTTP::Session->new(
+            store => $self->session_storage(),
+            state => HTTP::Session::State::Cookie->new(cookie_key => 'whadaadmin_sid'),
+            request => $c->req
+        );
+        use Data::Dumper;
+        warn Dumper $session;
+        unless ($session->get('logged_in')) {
+            warn Dumper $c->res;
+            # $session->response_filter($c->res);
+            # warn Dumper $c->res;
+            $c->halt(401, 'specified operations requires login as Whada Admin member, see /.');
             return;
         }
-        $c->stash->{session} = $authenticated;
+        my $privs = decode_json($session->get('whada_privs') || '{}');
+        unless ($privs->{admin}) {
+            $c->halt(401, 'specified operations requires login as Whada Admin member.');
+            return;
+        }
+        $c->stash->{session} = $session;
+        $c->stash->{username} = $session->get('username');
+        $c->stash->{whada_privs} = $privs;
+        # $c->stash->{session}->response_filter($c->res);
         $app->($self, $c);
     }
 };
 
 get '/' => [qw/check_authenticated/] => sub {
     my ($self, $c) = @_;
-    if ($self->stash->{authenticated}) {
-        $c->render('index.tx', {user => $c->stash->{authenticated}}); # authentication form or menu
+    my $session = $c->stash->{session};
+    if ($c->stash->{username}) { # menu for logged-in users
+        $c->render('index.tx', {
+            username => $session->get('username'),
+            privileges => $c->stash->{whada_privs},
+        });
     }
-    else {
+    else { # authentication form
         $c->render('login.tx');
     }
+    $session->response_filter($c->res);
+    $c->res;
+};
+
+# for html debugging
+get '/index' => [qw/check_authenticated/] => sub {
+    my ($self, $c) = @_;
+    my $session = $c->stash->{session};
+    $c->render('index.tx', {
+        username => $session->get('username'),
+        privileges => $c->stash->{whada_privs},
+    });
+    $session->response_filter($c->res);
+    $c->res;
 };
 
 post '/login' => sub {
+    my ($self, $c) = @_;
     $c->req->param('username'); ...;
     $c->redirect($c->req->uri_for('/'));
 };
