@@ -7,6 +7,20 @@
     <link type="text/css" href="css/flick/jquery-ui-1.8.16.custom.css" rel="stylesheet" />	
     <script type="text/javascript" src="js/jquery-1.6.2.min.js"></script>
     <script type="text/javascript" src="js/jquery-ui-1.8.16.custom.min.js"></script>
+    <script type="text/javascript" src="js/jquery.tmpl.min.js"></script>
+    <script type="text/javascript">
+      $(function(){
+        //hover states on the static widgets
+        $('ul.items li').hover(
+          function() { $(this).addClass('ui-state-hover'); }, 
+          function() { $(this).removeClass('ui-state-hover'); }
+        );
+
+        $('div.username, div.privilege').click(
+          function() { $(this).siblings('ul').slideToggle(80); return false; }
+        );
+      });
+    </script>
     <style type="text/css">
       /* Override some defaults */
       html, body {
@@ -59,7 +73,18 @@
       .topbar .btn {
         border: 0;
       }
-    </style>	
+
+      /* jQuery UI CSS framework icons */
+      ul.items {margin: 0; padding: 0; display: none;}
+      ul.items li {margin: 2px; position: relative; padding: 4px 0; cursor: pointer; float: left;  list-style: none;}
+      ul.items span.ui-icon {float: left; margin: 0 4px;}
+
+      /* whada original */
+      #control #panel {background-color: pink; border: 2px solid red;}
+      #control #panel table {border: 0;}
+      #control #panel table tr td {border: 0;}
+      div.username {padding-top: 0.1em; padding-bottom: 0.1em; margin-bottom: 0.1em;}
+    </style>
   </head>
   <body>
     <div class="topbar">
@@ -67,8 +92,8 @@
         <div class="container">
           <a class="brand" href="#">Whada</a>
           <ul class="nav">
-            <li class="active"><a href="">Username (admin)</a></li>
-            <li><a href="#logout">Logout</a></li>
+            <li id="login_username" class="active"><a href="">[% username %]</a></li>
+            <li><a href="/logout">Logout</a></li>
           </ul>
         </div>
       </div>
@@ -85,22 +110,34 @@
 
 	    <h2>Users</h2>
             <div>
-	      <strong>Authentication under WHADA(+ADMIN) privilege required.</strong>
+              <ul id="users-list">
+              </ul>
             </div>
 
 	    <h2>Privileges</h2>
             <div>
-              hoge
+              <ul id="privileges-list">
+              </ul>
             </div>
             
-            <h3>Whada Admin Privileges</h3>
-            <div>
-              pos pos pos
+            <h3 id="privileges-admin-list-title">Whada Admin Privileges</h3> <!-- show for only admin users -->
+            <div id="privileges-admin-list-wrapper">
+              <ul id="privileges-admin-list">
+              </ul>
             </div>
 
           </div>
           <div class="span4">
             <!-- secondary content -->
+
+            <div id="control" class="ui-widget ui-corner-all">
+              <div id="panel" class="ui-widget">
+                <table>
+                  <tr><td><strong>target: </strong></td><td> tagomoris </td></tr>
+                  <tr><td>hoge</td><td>pospospos</td>
+                </table>
+              </div>
+            </div>
 
             <h3>serch</h3>
             <div>
@@ -110,8 +147,9 @@
             <h3>your privileges</h3>
             <div>
               <ul>
-                <li>WHADA</li>
-                <li>WHADA+ADMIN</li>
+                [% FOREACH priv IN privileges %]
+                <li>[% priv %]</li>
+                [% END %]
               </ul>
             </div>
           </div>

@@ -160,7 +160,7 @@ get '/index' => [qw/check_authenticated/] => sub {
     my $session = $c->stash->{session};
     $c->render('index.tx', {
         username => $session->get('username'),
-        privileges => $c->stash->{whada_privs},
+        privileges => [keys(%{$c->stash->{whada_privs}})],
     });
     $session->response_filter($c->res);
     $c->res;
