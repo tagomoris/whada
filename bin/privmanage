@@ -1,0 +1,41 @@
+#!/usr/bin/env perl
+
+if (scalar(@ARGV) < 2 or ($ARGV[0] ne '-u' and $ARGV[0] ne '-p') or ($ARGV[0] eq '-p' and (scalar(@ARGV) != 2 and scalar(@ARGV) != 3)) ) {
+    print STDERR "usage:\n";
+    print STDERR "  privmanage -p PRIV_NAME [PRIV_TYPE]\n";
+    print STDERR "     show PRIV_NAME's privilege setting, or set it\n";
+    print STDERR "     PRIV_TYPE: always_allow / default_allow / default_deny / always_deny\n";
+    print STDERR "  privmanage -u USER_NAME\n";
+    print STDERR "     show USER_NAME's privilege setting\n";
+    print STDERR "  privmanage -u USER_NAME -a PRIV_NAME\n";
+    print STDERR "     add privilege PRIV_NAME to user USER_NAME\n";
+    print STDERR "  privmanage -u USER_NAME -d PRIV_NAME\n";
+    print STDERR "     delete privilege PRIV_NAME from user USER_NAME\n";
+    print STDERR "\n";
+    exit 0;
+}
+
+use FindBin;
+use lib "$FindBin::Bin/../extlib/lib/perl5";
+use lib "$FindBin::Bin/../lib";
+
+use File::Basename qw//;
+
+use Cache::KyotoTycoon;
+
+use Whada::PrivStore;
+use Whada::Credential;
+use WhadaAdmin::Config;
+
+
+my $CONF_FILE_PATH = File::Basename::dirname(__FILE__) . '/../config.json';
+
+my $config = WhadaAdmin::Config->new($CONF_FILE_PATH);
+my $storage_conf = $config->storage_params;
+my $storage_host = $storage_conf->{host} || '127.0.0.1';
+my $storage_port = $storage_conf->{port} || 1978;
+my $storage_dbname = 'whadaadmin.kch';
+
+my $storage = Cache::KyotoTycoon->new(host => $storage_host, port => $storage_port, db => $storage_dbname);
+Whada::PrivStore->set_storage_connection($storage);
+
