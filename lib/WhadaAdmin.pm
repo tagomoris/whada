@@ -12,7 +12,6 @@ use HTTP::Session::State::Cookie;
 use Kossy;
 
 use WhadaAdmin::Config;
-use WhadaAdmin::Util;
 
 use Whada::PrivStore;
 use Whada::Credential;
@@ -99,6 +98,7 @@ filter 'require_authenticated' => sub {
             $c->halt(401, 'specified operations requires login, see /.');
             return;
         }
+        # $session->set('logged_in', 1);
         $c->stash->{session} = $session;
         $c->stash->{username} = $session->get('username');
         $c->stash->{whada_privs} = decode_json($session->get('whada_privs') || '{}');
@@ -126,10 +126,11 @@ filter 'require_authenticated_admin' => sub {
             return;
         }
         my $privs = decode_json($session->get('whada_privs') || '{}');
-        unless ($privs->{admin}) {
+        unless ($privs->{'WHADA+ADMIN'}) {
             $c->halt(401, 'specified operations requires login as Whada Admin member.');
             return;
         }
+        # $session->set('logged_in', 1);
         $c->stash->{session} = $session;
         $c->stash->{username} = $session->get('username');
         $c->stash->{whada_privs} = $privs;
@@ -166,13 +167,40 @@ get '/index' => [qw/check_authenticated/] => sub {
     $c->res;
 };
 
-post '/login' => sub {
+post '/login' => [qw/check_authenticated/] => sub {
     my ($self, $c) = @_;
-    $c->req->param('username'); ...;
-    $c->redirect($c->req->uri_for('/'));
+    my $username = $c->req->param('username');
+    my $password = $c->req->param('password');
+
+    my $session = $self->stash->{session};
+    my $entry;
+    try {
+        $entry = Whada::Engine->authenticate($self->conf->engine_params($username, $password, 'WHADA'));
+    } catch {
+        print STDERR "perl backend search failed with error: $_\n";
+        $entry = undef;
+    };
+
+    if ($entry) {
+        $session->set('logged_in', 1);
+        my $privs = Whada::PrivStore->privileges(Whada::Credential->new({username => $username}));
+        $session->set('whada_privs', encode_json($privs));
+    }
+    else {
+        $session->set('logged_in', 0);
+    }
+    $c->redirect('/');
+    $session->response_filter($c->res);
+    $c->res;
 };
 
-post '/logout' => sub {
+post '/logout' => [qw/check_authenticated/] => sub {
+    my ($self, $c) = @_;
+    my $session = $self->stash->{session};
+    $session->expire();
+    $c->redirect('/');
+    # $session->response_filter($c->res);
+    $c->res;
 };
 
 get '/labels' => [qw/require_authenticated/] => sub {
