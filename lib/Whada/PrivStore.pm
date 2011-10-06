@@ -79,7 +79,7 @@ sub priv_data_list {
         try {
             push @results, decode_json($p->{data});
         } catch {
-            warnf 'failed to decode json:' . $data;
+            warnf 'failed to decode json:' . $p->{data};
         };
     }
     return \@results;
@@ -125,7 +125,7 @@ sub user_data_list {
         try {
             push @results, decode_json($p->{data});
         } catch {
-            warnf 'failed to decode json:' . $data;
+            warnf 'failed to decode json:' . $p->{data};
         };
     }
     return \@results;
