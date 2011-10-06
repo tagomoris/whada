@@ -71,22 +71,30 @@
       ul.items span.ui-icon {float: left; margin: 0 4px;}
 
       /* whada original */
-      #control #checker {background-color: mediumaquamarine; border: 2px solid darkgreen; margin-bottom: 2em; padding: 0.5em;}
-      #control #checker table {border: 0;}
-      #control #checker table tr td {border: 0;}
+      .dialog {display:none;}
 
-      #control #operator {display: none; background-color: pink; border: 2px solid red; margin-bottom: 2em; padding: 0.5em;}
-      #control #operator table {border: 0;}
-      #control #operator table tr td {border: 0;}
+      .control #checker_bar {background-color: darkgreen; margin-top: 2em; padding-left: 2em; cursor: pointer;}
+      .control #checker_bar h2 {color: white; font-weight: bold;}
+      .control #checker {display: none; background-color: mediumaquamarine; border: 2px solid darkgreen; padding: 0.5em;}
 
-      #control #panel {background-color: skyblue; border: 2px solid blue; margin-bottom: 2em; padding: 0.5em;}
-      #control #panel table {border: 0;}
-      #control #panel table tr td {border: 0;}
+      .control #operator_bar {background-color: red; margin-top: 2em; padding-left: 2em; cursor: pointer;}
+      .control #operator_bar h2 {color: white; font-weight: bold;}
+      .control #operator {display: none; background-color: pink; border: 2px solid red; margin-bottom: 2em; padding: 0.5em;}
+      .control #operator li {list-style: none; margin-bottom: 0.5em; font-size: large; color: black;}
 
-      div.username {padding-top: 0.1em; padding-bottom: 0.1em; margin-bottom: 0.1em;}
+      .control #panel_bar {background-color: blue; margin-top: 2em; padding-left: 2em; cursor: pointer;}
+      .control #panel_bar h2 {color: white; font-weight: bold;}
+      .control #panel {display: none; background-color: skyblue; border: 2px solid blue; margin-bottom: 2em; padding: 0.5em;}
+
+      div.username,div.privilege {padding-top: 0.1em; padding-bottom: 0.1em; margin-bottom: 0.1em; cursor: pointer;}
     </style>
   </head>
   <body>
+    <div id="dialog" title="">
+      <div id="dialog_message">
+      </div>
+    </div>
+
     <div class="topbar">
       <div class="fill">
         <div class="container">
@@ -143,9 +151,11 @@
               <input id="isearchBox" type="text" style="border: 1px solid silver;" />
             </div>
 
-            <div id="control" class="ui-widget ui-corner-all">
-              <div id="checker" class="ui-widget">
+            <div class="control ui-widget ui-corner-all">
+              <div id="checker_bar" class="ui-widget">
                 <h2>check privilege</h2>
+              </div>
+              <div id="checker" class="ui-widget">
                 <dl>
                   <dt style="font-size: large;">for user</dt>
                   <dd style="margin-bottom: 1em;">
@@ -154,19 +164,42 @@
                   <dt style="font-size: large;">for privilege label</dt>
                   <dd>
                     <input id="checker_privilege" type="text" style="width: 13em;" placeholder="privilege" />
-                    <a class="checker_button" href="#">execute</a>
+                    <a class="checker_button" id="checker_button" href="#">execute</a>
                   </dd>
                 </dl>
               </div>
             </div>
 
             : if $isadmin {
-            <div id="control" class="ui-widget ui-corner-all">
+            <div class="control ui-widget ui-corner-all">
+              <div id="operator_bar" class="ui-widget">
+                <h2>privilege operation</h2>
+              </div>
               <div id="operator" class="ui-widget">
+                <ul>
+                  <li>username <span id="operator_user"></span></li>
+                  <li>privilege <span id="operator_priv"></span></li>
+                  <li>status <span id="operator_status"></span></li>
+                </ul>
+                <div style="font-size: small;">
+                  <p style="font-size: medium;">for user</p>
+                  <a class="operator_button" id="operator_allow" href="#">allow<br />user</a>
+                  <a class="operator_button" id="operator_deny" href="#">deny<br />user</a>
+                  <a class="operator_button" id="operator_remove" href="#">remove<br />(follow default)</a>
+                </div>
+                <div style="font-size: small;">
+                  <p style="font-size: medium;">for privilege</p>
+                  <a class="operator_button" id="operator_always_allow" href="#">always<br />allow</a>
+                  <a class="operator_button" id="operator_default_allow" href="#">default<br />allow</a>
+                  <a class="operator_button" id="operator_default_deny" href="#">default<br />deny</a>
+                  <a class="operator_button" id="operator_always_deny" href="#">always<br />deny</a>
               </div>
             </div>
 
-            <div id="control" class="ui-widget ui-corner-all">
+            <div class="control ui-widget ui-corner-all">
+              <div id="panel_bar" class="ui-widget">
+                <h2>add/remove data</h2>
+              </div>
               <div id="panel" class="ui-widget">
                 <dl>
                   <dt style="font-size: large;">add user</dt>
