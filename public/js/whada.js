@@ -1,3 +1,55 @@
+$(function(){
+  load_privileges_list();
+  load_privileges_admin_list();
+  load_users_list();
+});
+
+function re_assign_events() {
+  $('div.username,div.privilege')
+    .die('click')
+    .live('click', function() {
+      $(this).siblings('ul').slideToggle(80);
+      $('ul.items li')
+        .unbind('hover')
+        .hover(
+          function() { $(this).addClass('ui-state-hover'); }, 
+          function() { $(this).removeClass('ui-state-hover'); }
+        );
+      return false;
+    });
+};
+
+$.template("privilegeItemTemplate",
+           '<li style="list-style-type: none;">' +
+           '  <div class="privilege" style="font-size: large; font-weight: bold;">${PrivilegeName}</div>' +
+           '  <ul class="items ui-widget ui-helper-clearfix">' +
+           '    <li class="ui-state-default ui-corner-all">${PrivilegeType}</li>' +
+           '  </ul>' +
+           '</li>');
+
+function insert_privilege_into_list(priv, target){
+  $.tmpl("privilegeItemTemplate", [{PrivilegeName: priv.name, PrivilegeType: priv.type}])
+    .appendTo(target);
+};
+
+function load_privileges_list(){
+  $.get('/privs', function(data){
+    data.forEach(function(item){
+      insert_privilege_into_list(item, '#privileges-list');
+    });
+    re_assign_events();
+  });
+};
+
+function load_privileges_admin_list(){
+  $.get('/admin_privs', function(data){
+    data.forEach(function(item){
+      insert_privilege_into_list(item, '#privileges-admin-list');
+    });
+    re_assign_events();
+  });
+};
+
 $.template("userItemTemplate",
            '<li style="list-style-type: none;">' +
            '  <div class="username" style="font-size: large; font-weight: bold;">${UserName}</div>' +
@@ -8,21 +60,23 @@ $.template("userItemTemplate",
            '  </ul>' +
            '</li>');
 
-$.template("privilegeItemTemplate",
-           '<li style="list-style-type: none;">' +
-           '  <div class="privilege" style="font-size: large; font-weight: bold;">${PrivilegeName}</div>' +
-           '  <ul class="items ui-widget ui-helper-clearfix">' +
-           '    {{each Users}}' +
-           '    <li class="ui-state-default ui-corner-all">${$value}</li>' +
-           '    {{/each}}' +
-           '  </ul>' +
-           '</li>');
+function insert_user_into_list(user, target){
+  var privs = [];
+  for (var name in user.privileges) {
+    privs.push(name);
+  }
+  $.tmpl("userItemTemplate", [{UserName:user.username, Privileges:privs.sort().map(function(p){return p + ':' + user.privileges[p];})}])
+    .appendTo(target);
+};
 
-function load_users_list(){};
-
-function load_privileges_list(){};
-
-function load_privileges_admin_list(){};
+function load_users_list(){
+  $.get('/users', function(data){
+    data.forEach(function(item){
+      insert_user_into_list(item, '#users-list');
+    });
+    re_assign_events();
+  });
+};
 
 function create_queryitem_object(queryid, id_prefix){
   var query = shibdata.query_cache[queryid];
