@@ -2,6 +2,8 @@
 
 sub usage {
     print STDERR "usage:\n";
+    print STDERR "  privmanage -t USER_NAME PRIV_NAME\n";
+    print STDERR "     challenge permission of USER_NAME aginst PRIV_NAME\n";
     print STDERR "  privmanage -p PRIV_NAME [PRIV_TYPE]\n";
     print STDERR "     show PRIV_NAME's privilege setting, or set it\n";
     print STDERR "     PRIV_TYPE: always_allow / default_allow / default_deny / always_deny\n";
@@ -15,7 +17,7 @@ sub usage {
     exit 0;
 }
 
-unless (scalar(@ARGV) > 0 and ($ARGV[0] eq '-i' or $ARGV[0] eq '-p' or $ARGV[0] eq '-u')) {
+unless (scalar(@ARGV) > 0 and ($ARGV[0] eq '-t' or $ARGV[0] eq '-i' or $ARGV[0] eq '-p' or $ARGV[0] eq '-u')) {
     usage();
 }
 
@@ -43,6 +45,14 @@ my $dbh = Whada::PrivStore->storage();
 
 # -i [x] / -p x [y] / -u x / -u x -a y1 [y2 ...] / -u x -d y1 [y2 ...]
 my ($cmd, $arg, @opt_args) = @ARGV;
+
+if ($cmd eq '-t') {
+    my $username = $arg;
+    my $priv = $opt_args[0];
+    my $result = Whada::PrivStore->check(Whada::Credential->new({username => $username, privilege => $priv}));
+    print 'challenge result: ', ($result ? 'success' : 'fail'), "\n";
+    exit(0);
+}
 
 if ($cmd eq '-i') {
     # nomally, denied
