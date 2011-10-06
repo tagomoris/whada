@@ -197,23 +197,30 @@ get '/logout' => [qw/check_authenticated/] => sub {
     $c->redirect('/');
 };
 
-get '/labels' => [qw/require_authenticated/] => sub {
+get '/privs' => [qw/require_authenticated/] => sub {
     my ($self, $c) = @_;
-    $c->render_json(Whada::PrivStore->priv_data_list());
+    my $privs = Whada::PrivStore->priv_data_list();
+    $c->render_json([grep {$_->{name} !~ /^WHADA/} @{$privs}]);
 };
 
-get '/label/:labelname' => [qw/require_authenticated/] => sub {
+get '/admin_privs' => [qw/require_authenticated_admin/] => sub {
     my ($self, $c) = @_;
-    $c->render_json(Whada::PrivStore->priv_data($c->args->{labelname});
+    my $privs = Whada::PrivStore->priv_data_list();
+    $c->render_json([grep {$_->{name} =~ /^WHADA/} @{$privs}]);
 };
 
-post '/label/create' => [qw/require_authenticated_admin/] => sub {
+get '/priv/:privname' => [qw/require_authenticated/] => sub {
+    my ($self, $c) = @_;
+    $c->render_json(Whada::PrivStore->priv_data($c->args->{labelname}));
 };
 
-post '/label/update' => [qw/require_authenticated_admin/] => sub {
+post '/priv/create' => [qw/require_authenticated_admin/] => sub {
 };
 
-post '/label/drop' => [qw/require_authenticated_admin/] => sub {
+post '/priv/update' => [qw/require_authenticated_admin/] => sub {
+};
+
+post '/priv/drop' => [qw/require_authenticated_admin/] => sub {
 };
 
 get '/users' => [qw/require_authenticated/] => sub {
@@ -223,7 +230,7 @@ get '/users' => [qw/require_authenticated/] => sub {
 
 get '/user/:username' => [qw/require_authenticated/] => sub {
     my ($self, $c) = @_;
-    $c->render_json(Whada::PrivStore->priv_data($c->args->{username});
+    $c->render_json(Whada::PrivStore->priv_data($c->args->{username}));
 };
 
 post '/user/create' => [qw/require_authenticated_admin/] => sub {
