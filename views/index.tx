@@ -8,19 +8,7 @@
     <script type="text/javascript" src="js/jquery-1.6.2.min.js"></script>
     <script type="text/javascript" src="js/jquery-ui-1.8.16.custom.min.js"></script>
     <script type="text/javascript" src="js/jquery.tmpl.min.js"></script>
-    <script type="text/javascript">
-      $(function(){
-        //hover states on the static widgets
-        $('ul.items li').hover(
-          function() { $(this).addClass('ui-state-hover'); }, 
-          function() { $(this).removeClass('ui-state-hover'); }
-        );
-
-        $('div.username, div.privilege').click(
-          function() { $(this).siblings('ul').slideToggle(80); return false; }
-        );
-      });
-    </script>
+    <script type="text/javascript" src="js/whada.js"></script>
     <style type="text/css">
       /* Override some defaults */
       html, body {
