@@ -4,17 +4,26 @@ use strict;
 use warnings;
 use utf8;
 
-use Cache::KyotoTycoon;
+use Try::Tiny;
+
+use DBI;
+use DBD::mysql;
 use HTTP::Session;
-use HTTP::Session::Store::KyotoTycoon;
+use HTTP::Session::Store::DBI;
 use HTTP::Session::State::Cookie;
+
+use JSON;
 
 use Kossy;
 
 use WhadaAdmin::Config;
 
+use Whada::Engine;
 use Whada::PrivStore;
 use Whada::Credential;
+
+# for debug...
+use Data::Dumper;
 
 our $VERSION = 0.01;
 
@@ -27,36 +36,34 @@ sub config {
     $self->{_config};
 }
 
-sub storage {
+sub storage { # use this ?
     my $self = shift;
     return $self->{_storage} if $self->{_storage};
 
     my $storage_conf = $self->config->storage_params;
-    my $host = $storage_conf->{host} || '127.0.0.1';
-    my $port = $storage_conf->{port} || 1978;
-    my $dbname = 'whadaadmin.kch';
-
-    $self->{_storage} = Cache::KyotoTycoon->new(host => $host, port => $port, db => $dbname);
-    Whada::PrivStore->set_storage_connection($self->{_storage});
-    $self->{_storage};
+    foreach my $key (keys(%{$storage_conf})) {
+        Whada::PrivStore->set_storage_configuration($key, $storage_conf->{$key});
+    }
+    $self->{_storage} = Whada::PrivStore->storage();
 }
 
 sub session_storage {
     my $self = shift;
-    return $self->{_session_storage} if $self->{_session_storage};
 
     my $storage_conf = $self->config->storage_params;
-    my $host = $storage_conf->{host} || '127.0.0.1';
-    my $port = $storage_conf->{port} || 1978;
-    my $dbname = 'adminsession';
-    my $expires = 60; # 3 * 3600 # 3 hours
-
-    $self->{_session_storage} = HTTP::Session::Store::KyotoTycoon->new(
-        host => $host,
-        port => $port,
-        db => $dbname,
-        expires => $expires
-    );
+    my $host = $storage_conf->{host} || 'localhost';
+    my $port = $storage_conf->{port} || 3306;
+    my $username = $storage_conf->{username};
+    my $password = $storage_conf->{password};
+    my $dsn;
+    if ($host eq 'localhost' and not $port and $username eq 'root' and $password eq '') {
+        $dsn = "DBI:mysql:database=whadasession;host=localhost";
+    }
+    else {
+        $dsn = "DBI:mysql:database=whadasession;host=$host;port=$port";
+    }
+    DBI->connect_cached($dsn, $username, $password)
+        or die $DBI::errstr;
 }
 
 filter 'check_authenticated' => sub {
@@ -64,18 +71,20 @@ filter 'check_authenticated' => sub {
     sub {
         my ($self, $c) = @_;
         my $session = HTTP::Session->new(
-            store => $self->session_storage(),
+            store => HTTP::Session::Store::DBI->new({
+                dbh => $self->session_storage(),
+                expires => $self->config->{session}->{expires},
+            }),
             state => HTTP::Session::State::Cookie->new(cookie_key => 'whadaadmin_sid'),
             request => $c->req
         );
-        use Data::Dumper;
-        warn Dumper $session;
         if ($session->get('logged_in')) {
             $session->set('logged_in', 1);
+            $c->stash->{username} = $session->get('username');
+            $c->stash->{whada_privs} = decode_json($session->get('whada_privs') || '{}');
         }
         $c->stash->{session} = $session;
-        $c->stash->{username} = undef;
-        # $c->stash->{session}->response_filter($c->res);
+        $session->response_filter($c->res);
         $app->($self, $c);
     }
 };
@@ -85,24 +94,22 @@ filter 'require_authenticated' => sub {
     sub {
         my ($self, $c) = @_;
         my $session = HTTP::Session->new(
-            store => $self->session_storage(),
+            store => HTTP::Session::Store::DBI->new({
+                dbh => $self->session_storage(),
+                expires => $self->config->{session}->{expires},
+            }),
             state => HTTP::Session::State::Cookie->new(cookie_key => 'whadaadmin_sid'),
             request => $c->req
         );
-        use Data::Dumper;
-        warn Dumper $session;
         unless ($session->get('logged_in')) {
-            warn Dumper $c->res;
-            # $session->response_filter($c->res);
-            # warn Dumper $c->res;
             $c->halt(401, 'specified operations requires login, see /.');
             return;
         }
-        # $session->set('logged_in', 1);
+        $session->set('logged_in', 1);
         $c->stash->{session} = $session;
         $c->stash->{username} = $session->get('username');
         $c->stash->{whada_privs} = decode_json($session->get('whada_privs') || '{}');
-        # $c->stash->{session}->response_filter($c->res);
+        $session->response_filter($c->res);
         $app->($self, $c);
     }
 };
@@ -112,16 +119,14 @@ filter 'require_authenticated_admin' => sub {
     sub {
         my ($self, $c) = @_;
         my $session = HTTP::Session->new(
-            store => $self->session_storage(),
+            store => HTTP::Session::Store::DBI->new({
+                dbh => $self->session_storage(),
+                expires => $self->config->{session}->{expires},
+            }),
             state => HTTP::Session::State::Cookie->new(cookie_key => 'whadaadmin_sid'),
             request => $c->req
         );
-        use Data::Dumper;
-        warn Dumper $session;
         unless ($session->get('logged_in')) {
-            warn Dumper $c->res;
-            # $session->response_filter($c->res);
-            # warn Dumper $c->res;
             $c->halt(401, 'specified operations requires login as Whada Admin member, see /.');
             return;
         }
@@ -130,11 +135,11 @@ filter 'require_authenticated_admin' => sub {
             $c->halt(401, 'specified operations requires login as Whada Admin member.');
             return;
         }
-        # $session->set('logged_in', 1);
+        $session->set('logged_in', 1);
         $c->stash->{session} = $session;
         $c->stash->{username} = $session->get('username');
         $c->stash->{whada_privs} = $privs;
-        # $c->stash->{session}->response_filter($c->res);
+        $session->response_filter($c->res);
         $app->($self, $c);
     }
 };
@@ -142,29 +147,19 @@ filter 'require_authenticated_admin' => sub {
 get '/' => [qw/check_authenticated/] => sub {
     my ($self, $c) = @_;
     my $session = $c->stash->{session};
-    if ($c->stash->{username}) { # menu for logged-in users
+    if ($session->get('logged_in')) { # menu for logged-in users
         $c->render('index.tx', {
             username => $session->get('username'),
-            privileges => $c->stash->{whada_privs},
+            privileges => [sort(keys(%{$c->stash->{whada_privs}}))],
+            privs => $c->stash->{whada_privs},
+            notification => $session->remove('notification'),
         });
     }
     else { # authentication form
-        $c->render('login.tx');
+        $c->render('login.tx', {
+            notification => $session->remove('notification'),
+        });
     }
-    $session->response_filter($c->res);
-    $c->res;
-};
-
-# for html debugging
-get '/index' => [qw/check_authenticated/] => sub {
-    my ($self, $c) = @_;
-    my $session = $c->stash->{session};
-    $c->render('index.tx', {
-        username => $session->get('username'),
-        privileges => [keys(%{$c->stash->{whada_privs}})],
-    });
-    $session->response_filter($c->res);
-    $c->res;
 };
 
 post '/login' => [qw/check_authenticated/] => sub {
@@ -172,10 +167,11 @@ post '/login' => [qw/check_authenticated/] => sub {
     my $username = $c->req->param('username');
     my $password = $c->req->param('password');
 
-    my $session = $self->stash->{session};
+    my $session = $c->stash->{session};
     my $entry;
     try {
-        $entry = Whada::Engine->authenticate($self->conf->engine_params($username, $password, 'WHADA'));
+        my @params = $self->config->engine_params($username, $password, 'WHADA');
+        $entry = Whada::Engine->authenticate(@params);
     } catch {
         print STDERR "perl backend search failed with error: $_\n";
         $entry = undef;
@@ -185,28 +181,30 @@ post '/login' => [qw/check_authenticated/] => sub {
         $session->set('logged_in', 1);
         my $privs = Whada::PrivStore->privileges(Whada::Credential->new({username => $username}));
         $session->set('whada_privs', encode_json($privs));
+        $session->set('username', $username);
     }
     else {
         $session->set('logged_in', 0);
+        $session->set('notification', 'check your password or WHADA privilege...');
     }
     $c->redirect('/');
-    $session->response_filter($c->res);
-    $c->res;
 };
 
-post '/logout' => [qw/check_authenticated/] => sub {
+get '/logout' => [qw/check_authenticated/] => sub {
     my ($self, $c) = @_;
-    my $session = $self->stash->{session};
+    my $session = $c->stash->{session};
     $session->expire();
     $c->redirect('/');
-    # $session->response_filter($c->res);
-    $c->res;
 };
 
 get '/labels' => [qw/require_authenticated/] => sub {
+    my ($self, $c) = @_;
+    $c->render_json(Whada::PrivStore->priv_data_list());
 };
 
 get '/label/:labelname' => [qw/require_authenticated/] => sub {
+    my ($self, $c) = @_;
+    $c->render_json(Whada::PrivStore->priv_data($c->args->{labelname});
 };
 
 post '/label/create' => [qw/require_authenticated_admin/] => sub {
@@ -219,11 +217,13 @@ post '/label/drop' => [qw/require_authenticated_admin/] => sub {
 };
 
 get '/users' => [qw/require_authenticated/] => sub {
+    my ($self, $c) = @_;
+    $c->render_json(Whada::PrivStore->user_data_list());
 };
 
 get '/user/:username' => [qw/require_authenticated/] => sub {
     my ($self, $c) = @_;
-    # $c->args->{username};
+    $c->render_json(Whada::PrivStore->priv_data($c->args->{username});
 };
 
 post '/user/create' => [qw/require_authenticated_admin/] => sub {

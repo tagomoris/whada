@@ -11,31 +11,6 @@ use JSON;
 
 use Whada::Logger;
 
-## example
-# my $x = {
-#     load_path => [
-#         '/Users/tagomoris/Documents/ldwhada/lib',
-#         '/home/edge-dev/ldwhada'
-#     ],
-#     auth_source => {
-#         type => 'ldap',
-#         host => '192.168.0.1', # or '192.168.0.1:389'
-#         binddn => 'cn=Manager,cn=Users,dc=ad,dc=intranet',
-#         bindpassword => 'secret',
-#         base => 'cn=Users,dc=ad,dc=intranet',
-#         attribute => 'sAMAccountName',    # in case of builtin Whada::Converter::LDAP
-#         converter_module => 'LDWhada::Converter', # or use plugin module for your environment
-#     },
-#     storage => {
-#         type => 'KT',
-#         host => 'localhost',
-#         port => 1978,
-#     },
-#     logger => {
-#         path => '/var/log/whada/admin',
-#     },
-# };
-
 sub new {
     my $this = shift;
     my $path = shift;
@@ -50,6 +25,8 @@ sub new {
     };
     my $self = bless $json_obj, $this;
 
+    $self->{session} ||= {};
+    $self->{session}->{expires} ||= 1800; # 30 min
     $self->load_external_modules();
 
     # try engine_params
@@ -72,6 +49,9 @@ sub load_external_modules {
     if ($self->{auth_source}->{type} eq 'ldap') {
         use Whada::Converter::LDAP;
         use Whada::Dictionary::LDAP;
+    }
+    if ($self->{auth_source}->{type} eq 'file') {
+        use Whada::Dictionary::File;
     }
     if ($self->{auth_source}->{converter_module}) {
         my $mod = $self->{auth_source}->{converter_module};
@@ -117,6 +97,10 @@ sub engine_params {
             bindpassword => $source->{bindpassword},
             base => $source->{base},
         });
+    }
+    elsif ($self->{auth_source} and $self->{auth_source}->{type} eq 'file') {
+        my $source = $self->{auth_source};
+        $dictionary = Whada::Dictionary::File->new(undef, {path => $source->{path}, salt => $source->{salt}});
     }
     else {
         croak 'unknown auth_source type:' . $self->{auth_source}->{type};

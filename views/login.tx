@@ -3,7 +3,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Whada Admin Login Page</title>
-    <link rel="stylesheet" href="http://twitter.github.com/bootstrap/1.3.0/bootstrap.min.css">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
     <link type="text/css" href="css/flick/jquery-ui-1.8.16.custom.css" rel="stylesheet" />	
     <script type="text/javascript" src="js/jquery-1.6.2.min.js"></script>
     <script type="text/javascript" src="js/jquery-ui-1.8.16.custom.min.js"></script>
@@ -91,8 +91,13 @@
 
 	    <h1>Welcome to Whada!</h1>
             <div class="ui-widget">
+              : if $notification {
+	      <p><span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>
+	        <strong><: $notification :></strong> </p>
+              : } else {
 	      <p><span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>
 	        <strong>Authentication under WHADA(+ADMIN) privilege required.</strong> </p>
+              : }
             </div>
             <div class="ui-widget">
               <form method="POST" action="/">

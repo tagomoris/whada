@@ -4,12 +4,9 @@
     "/home/edge-dev/ldwhada"
   ],
   "auth_source":{
-    "type":"ldap",
-    "host":"192.168.0.1:389",
-    "binddn":"cn=Manager,cn=Users,dc=ad,dc=intranet",
-    "bindpassword":"secret",
-    "base":"cn=Users,dc=ad,dc=intranet",
-    "converter_module":"LDWhada::Converter"
+    "type":"file",
+    "path":"/tmp/whada.authfile",
+    "salt":"f3j2q"
   },
   "storage":{
     "type":"DB",

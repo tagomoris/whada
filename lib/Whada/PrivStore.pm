@@ -68,6 +68,23 @@ sub priv_data {
     };
 }
 
+sub priv_data_list {
+    my $this = shift;
+    my $list = ($this->storage())->selectall_arrayref(
+        "SELECT name,data FROM privs",
+        {Slice => {}},
+    );
+    my @results = ();
+    foreach my $p (@{$list}) {
+        try {
+            push @results, decode_json($p->{data});
+        } catch {
+            warnf 'failed to decode json:' . $data;
+        };
+    }
+    return \@results;
+}
+
 sub save_priv_data {
     my $this = shift;
     my $data = shift;
@@ -95,6 +112,23 @@ sub user_data {
         warnf 'failed to decode json:' . $data->{data};
         return {username => $username};
     };
+}
+
+sub user_data_list {
+    my $this = shift;
+    my $list = ($this->storage())->selectall_arrayref(
+        "SELECT name,data FROM users",
+        {Slice => {}},
+    );
+    my @results = ();
+    foreach my $p (@{$list}) {
+        try {
+            push @results, decode_json($p->{data});
+        } catch {
+            warnf 'failed to decode json:' . $data;
+        };
+    }
+    return \@results;
 }
 
 sub save_user_data {
@@ -156,7 +190,7 @@ sub deny_privileges {
 }
 
 sub check {
-    my $this->shift;
+    my $this = shift;
     my $credential = shift;
     my $priv = $credential->privilege;
     my $type = $this->priv_type($priv);

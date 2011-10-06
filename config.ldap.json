@@ -1,0 +1,19 @@
+{
+  "load_path":[
+    "/Users/tagomoris/Documents/ldwhada/lib",
+    "/home/edge-dev/ldwhada"
+  ],
+  "auth_source":{
+    "type":"ldap",
+    "host":"192.168.0.1:389",
+    "binddn":"cn=Manager,cn=Users,dc=ad,dc=intranet",
+    "bindpassword":"secret",
+    "base":"cn=Users,dc=ad,dc=intranet",
+    "converter_module":"LDWhada::Converter"
+  },
+  "storage":{
+    "type":"DB",
+    "host":"localhost",
+    "username":"root"
+  }
+}

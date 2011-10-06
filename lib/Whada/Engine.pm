@@ -28,6 +28,8 @@ sub authenticate {
     my $opts = {@_};
     my $credential = $opts->{credential};
     my $dictionary = $opts->{dictionary};
+    use Data::Dumper;
+    warn Dumper $dictionary;
     my $logger = $opts->{logger};
     croak 'credential not found' unless $credential;
     croak 'dictionary not found' unless $dictionary;
