@@ -17,7 +17,6 @@ use Class::Accessor::Lite (
     new => 0,
     rw => [qw/root_dir/]
 );
-use JSON;
 
 use base qw/Exporter/;
 
@@ -238,6 +237,7 @@ use Class::Accessor::Lite (
     new => 1,
     rw => [qw/req res stash args tx debug/]
 );
+use JSON qw//;
 
 *request = \&req;
 *response = \&res;
@@ -274,7 +274,7 @@ sub render_json {
     my $self = shift;
     my $obj = shift;
 
-    my $body = encode_json( $obj );
+    my $body = JSON::encode_json( $obj );
     $self->res->status( 200 );
     $self->res->content_type('application/json;');
     $self->res->body( $body );
