@@ -52,6 +52,8 @@ if ($cmd eq '-i') {
     }
     $dbh->prepare('INSERT INTO settings (name,data) VALUES (?,?) ON DUPLICATE KEY UPDATE data=?')
         ->execute('global_default_privilege', $global_default_privilege, $global_default_privilege);
+    Whada::PrivStore->set_priv_type('WHADA', 'default_deny');
+    Whada::PrivStore->set_priv_type('WHADA+ADMIN', 'default_deny');
     exit(0);
 }
 
