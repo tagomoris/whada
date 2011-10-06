@@ -12,8 +12,8 @@
     "converter_module":"LDWhada::Converter"
   },
   "storage":{
-    "type":"KT",
+    "type":"DB",
     "host":"localhost",
-    "port":1978
+    "username":"root"
   }
 }

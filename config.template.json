@@ -9,12 +9,13 @@
     "binddn":"cn=Manager,cn=Users,dc=ad,dc=intranet",
     "bindpassword":"secret",
     "base":"cn=Users,dc=ad,dc=intranet",
-    "attribute":"sAMAccountName",
     "converter_module":"LDWhada::Converter"
   },
   "storage":{
-    "type":"KT",
+    "type":"DB",
     "host":"localhost",
-    "port":1978
+    "port":3306,
+    "username":"whada",
+    "password":"whadapass"
   }
 }

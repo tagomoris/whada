@@ -1,18 +1,22 @@
 #!/usr/bin/env perl
 
-if (scalar(@ARGV) < 2 or ($ARGV[0] ne '-u' and $ARGV[0] ne '-p') or ($ARGV[0] eq '-p' and (scalar(@ARGV) != 2 and scalar(@ARGV) != 3)) ) {
+sub usage {
     print STDERR "usage:\n";
     print STDERR "  privmanage -p PRIV_NAME [PRIV_TYPE]\n";
     print STDERR "     show PRIV_NAME's privilege setting, or set it\n";
     print STDERR "     PRIV_TYPE: always_allow / default_allow / default_deny / always_deny\n";
     print STDERR "  privmanage -u USER_NAME\n";
     print STDERR "     show USER_NAME's privilege setting\n";
-    print STDERR "  privmanage -u USER_NAME -a PRIV_NAME\n";
-    print STDERR "     add privilege PRIV_NAME to user USER_NAME\n";
-    print STDERR "  privmanage -u USER_NAME -d PRIV_NAME\n";
-    print STDERR "     delete privilege PRIV_NAME from user USER_NAME\n";
+    print STDERR "  privmanage -u USER_NAME -a PRIV_NAME [PRIV_NAME ...]\n";
+    print STDERR "     allow privilege PRIV_NAME to user USER_NAME\n";
+    print STDERR "  privmanage -u USER_NAME -d PRIV_NAME [PRIV_NAME ...]\n";
+    print STDERR "     deny privilege PRIV_NAME from user USER_NAME\n";
     print STDERR "\n";
     exit 0;
+}
+
+unless (scalar(@ARGV) > 0 and ($ARGV[0] eq '-i' or $ARGV[0] eq '-p' or $ARGV[0] eq '-u')) {
+    usage();
 }
 
 use FindBin;
@@ -21,7 +25,7 @@ use lib "$FindBin::Bin/../lib";
 
 use File::Basename qw//;
 
-use Cache::KyotoTycoon;
+use DBI;
 
 use Whada::PrivStore;
 use Whada::Credential;
@@ -32,10 +36,75 @@ my $CONF_FILE_PATH = File::Basename::dirname(__FILE__) . '/../config.json';
 
 my $config = WhadaAdmin::Config->new($CONF_FILE_PATH);
 my $storage_conf = $config->storage_params;
-my $storage_host = $storage_conf->{host} || '127.0.0.1';
-my $storage_port = $storage_conf->{port} || 1978;
-my $storage_dbname = 'whadaadmin.kch';
+foreach my $key (keys(%{$storage_conf})) {
+    Whada::PrivStore->set_storage_configuration($key, $storage_conf->{$key});
+}
+my $dbh = Whada::PrivStore->storage();
 
-my $storage = Cache::KyotoTycoon->new(host => $storage_host, port => $storage_port, db => $storage_dbname);
-Whada::PrivStore->set_storage_connection($storage);
+# -i [x] / -p x [y] / -u x / -u x -a y1 [y2 ...] / -u x -d y1 [y2 ...]
+my ($cmd, $arg, @opt_args) = @ARGV;
+
+if ($cmd eq '-i') {
+    # nomally, denied
+    my $global_default_privilege = 'denied';
+    if ($arg and $arg eq 'allowed') {
+        $global_default_privilege = 'allowed';
+    }
+    $dbh->prepare('INSERT INTO settings (name,data) VALUES (?,?) ON DUPLICATE KEY UPDATE data=?')
+        ->execute('global_default_privilege', $global_default_privilege, $global_default_privilege);
+    exit(0);
+}
+
+if ($cmd eq '-p') {
+    usage() if (not $arg or scalar(@opt_args) > 1); #exit
+    my $type = Whada::PrivStore->priv_type($arg);
+    if (scalar(@opt_args) < 1) {
+        if ($type) {
+            print $arg, ': ', $type, "\n";
+        }else{
+            print $arg, " is not defined. (see 'global_default_privilege'.)\n";
+        }
+        exit(0);
+    }
+    print 'changing privilege ', $arg, ': ', $type, ' -> ', $opt_args[0], "\n";
+    Whada::PrivStore->set_priv_type($arg, $opt_args[0]);
+    print "done.\n";
+    exit(0);
+}
+
+# -u x / -u x -a y1 [y2 ...] / -u x -d y1 [y2 ...]
+if ($cmd eq '-u') {
+    usage() if (not $arg); # exit
+    my $privs = Whada::PrivStore->privileges(Whada::Credential->new({username =>$arg}));
+    if (scalar(@opt_args) < 1) {
+        if (scalar(keys(%{$privs})) < 1) {
+            print $arg, " doesn't have any privileges (without defaults of each privileges).\n";
+        }else{
+            print $arg, ": \n";
+            foreach my $k (sort(keys %{$privs})) {
+                print "  ", $k, ": ", $privs->{$k}, "\n";
+            }
+        }
+        exit(0);
+    }
+    my ($op, @targets) = @opt_args;
+    if ($op eq '-a') { #allow
+        Whada::PrivStore->allow_privileges(Whada::Credential->new({username => $arg}), @targets);
+    }
+    elsif ($op eq '-d') {
+        Whada::PrivStore->deny_privileges(Whada::Credential->new({username => $arg}), @targets);
+    }
+    else {
+        usage(); # exit
+    }
+    print "changed user privileges of ", $arg, "\n";
+    my $after = Whada::PrivStore->privileges(Whada::Credential->new({username => $arg}));
+    foreach my $p (sort(keys %{$after})) {
+        print $p, ": ", $privs->{$p}, ' -> ', $after->{$p}, "\n";
+    }
+    print "done.\n";
+    exit(0);
+}
+
+usage();
 

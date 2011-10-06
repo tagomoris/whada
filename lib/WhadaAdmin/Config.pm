@@ -83,12 +83,14 @@ sub storage_params {
     my $self = shift;
 
     # default is KT default port of localhost
-    return {host => 'localhost', port => 1978} unless $self->{storage};
+    return {host => 'localhost', username => 'root', password => ''} unless $self->{storage};
 
-    if (defined $self->{storage}->{type} and $self->{storage}->{type} eq 'KT') {
+    if (defined $self->{storage}->{type} and $self->{storage}->{type} eq 'DB') {
         return {
             host => ($self->{storage}->{host} || 'localhost'),
-            port => ($self->{storage}->{port} || 1978),
+            port => $self->{storage}->{port},
+            username => $self->{storage}->{username},
+            password => $self->{storage}->{password},
         };
     }
     croak 'unknown storage type:' . $self->{storage}->{type};

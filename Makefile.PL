@@ -15,15 +15,20 @@ requires 'Text::Xslate::Bridge::TT2Like';
 requires 'Try::Tiny', 0.09;
 requires 'Class::Accessor::Lite';
 
+requires 'Log::Minimal';
+
 requires 'Net::LDAP';
 requires 'Net::LDAP::Filter';
 requires 'File::Stamped';
 
-requires 'Cache::KyotoTycoon';
 requires 'JSON';
 requires 'JSON::XS';
 
-requires 'HTTP::Session::KyotoTycoon';
+requires 'DBI';
+requires 'DBD::mysql';
+requires 'HTTP::Session';
+requires 'HTTP::Session::Store::DBI';
+requires 'HTTP::Session::State::Cookie';
 
 tests 't/*.t';
 test_requires 'Test::More';
