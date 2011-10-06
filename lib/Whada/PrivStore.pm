@@ -148,10 +148,16 @@ sub priv_type {
     return ($this->priv_data(shift))->{type};
 }
 
+sub check_priv_type {
+    my $this = shift;
+    my $type = shift;
+    return scalar(grep {$type eq $_} @TYPES) == 1;
+}
+
 sub set_priv_type {
     my $this = shift;
     my ($priv, $type) = @_;
-    if (scalar(grep {$type eq $_} @TYPES) < 1) {
+    unless ($this->check_priv_type($type)) {
         warnf 'invalid privilege type, ignored:' . $type;
         return;
     }
