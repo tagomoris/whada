@@ -1,7 +1,11 @@
 $(function(){
   load_privileges_list();
-  load_privileges_admin_list();
   load_users_list();
+  $("a.checker_button").button();
+  if (whada_logged_in_as_admin) {
+    load_privileges_admin_list();
+    $("a.panel_button").button();
+  }
 });
 
 function re_assign_events() {
@@ -9,6 +13,12 @@ function re_assign_events() {
     .die('click')
     .live('click', function() {
       $(this).siblings('ul').slideToggle(80);
+      if ($(this).hasClass('username')) {
+        $('#checker_username').val($(this).text());
+      }
+      if ($(this).hasClass('privilege')) {
+        $('#checker_privilege').val($(this).text());
+      }
       $('ul.items li')
         .unbind('hover')
         .hover(

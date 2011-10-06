@@ -82,6 +82,7 @@ filter 'check_authenticated' => sub {
             $session->set('logged_in', 1);
             $c->stash->{username} = $session->get('username');
             $c->stash->{whada_privs} = decode_json($session->get('whada_privs') || '{}');
+            $c->stash->{is_admin} = $session->get('is_admin') || $session->get('is_partial_admin');
         }
         $c->stash->{session} = $session;
         $session->response_filter($c->res);
@@ -109,6 +110,7 @@ filter 'require_authenticated' => sub {
         $c->stash->{session} = $session;
         $c->stash->{username} = $session->get('username');
         $c->stash->{whada_privs} = decode_json($session->get('whada_privs') || '{}');
+        $c->stash->{is_admin} = $session->get('is_admin') || $session->get('is_partial_admin');
         $session->response_filter($c->res);
         $app->($self, $c);
     }
@@ -130,15 +132,15 @@ filter 'require_authenticated_admin' => sub {
             $c->halt(401, 'specified operations requires login as Whada Admin member, see /.');
             return;
         }
-        my $privs = decode_json($session->get('whada_privs') || '{}');
-        unless ($privs->{'WHADA+ADMIN'}) {
-            $c->halt(401, 'specified operations requires login as Whada Admin member.');
-            return;
-        }
         $session->set('logged_in', 1);
         $c->stash->{session} = $session;
         $c->stash->{username} = $session->get('username');
-        $c->stash->{whada_privs} = $privs;
+        $c->stash->{whada_privs} = decode_json($session->get('whada_privs') || '{}');
+        $c->stash->{is_admin} = $session->get('is_admin') || $session->get('is_partial_admin');
+        unless ($c->stash->{is_admin}) {
+            $c->halt(401, 'specified operations requires login as Whada Admin member.');
+            return;
+        }
         $session->response_filter($c->res);
         $app->($self, $c);
     }
@@ -153,6 +155,7 @@ get '/' => [qw/check_authenticated/] => sub {
             privileges => [sort(keys(%{$c->stash->{whada_privs}}))],
             privs => $c->stash->{whada_privs},
             notification => $session->remove('notification'),
+            isadmin => $c->stash->{is_admin},
         });
     }
     else { # authentication form
@@ -179,9 +182,13 @@ post '/login' => [qw/check_authenticated/] => sub {
 
     if ($entry) {
         $session->set('logged_in', 1);
-        my $privs = Whada::PrivStore->privileges(Whada::Credential->new({username => $username}));
+        my $cred = Whada::Credential->new({username => $username, privilege => 'WHADA+ADMIN'});
+        my $privs = Whada::PrivStore->privileges($cred);
+        my $is_admin = Whada::PrivStore->check($cred);
         $session->set('whada_privs', encode_json($privs));
         $session->set('username', $username);
+        $session->set('is_admin', $is_admin);
+        $session->set('is_partial_admin', scalar(grep {$_ =~ /^WHADA\+.+\+ADMIN$/} keys(%$privs)) > 1);
     }
     else {
         $session->set('logged_in', 0);

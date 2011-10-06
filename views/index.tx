@@ -9,6 +9,9 @@
     <script type="text/javascript" src="js/jquery-ui-1.8.16.custom.min.js"></script>
     <script type="text/javascript" src="js/jquery.tmpl.min.js"></script>
     <script type="text/javascript" src="js/whada.js"></script>
+    <script type="text/javascript">
+      var whada_logged_in_as_admin = false;
+    </script>
     <style type="text/css">
       /* Override some defaults */
       html, body {
@@ -47,12 +50,12 @@
       }
 
       /* Styles you shouldn't keep as they are for displaying this base example only */
-      .content .span10,
-      .content .span4 {
+      .content .span8,
+      .content .span6 {
         min-height: 500px;
       }
       /* Give a quick and non-cross-browser friendly divider */
-      .content .span4 {
+      .content .span6 {
         margin-left: 0;
         padding-left: 19px;
         border-left: 1px solid #eee;
@@ -68,9 +71,18 @@
       ul.items span.ui-icon {float: left; margin: 0 4px;}
 
       /* whada original */
-      #control #panel {background-color: pink; border: 2px solid red;}
+      #control #checker {background-color: mediumaquamarine; border: 2px solid darkgreen; margin-bottom: 2em; padding: 0.5em;}
+      #control #checker table {border: 0;}
+      #control #checker table tr td {border: 0;}
+
+      #control #operator {display: none; background-color: pink; border: 2px solid red; margin-bottom: 2em; padding: 0.5em;}
+      #control #operator table {border: 0;}
+      #control #operator table tr td {border: 0;}
+
+      #control #panel {background-color: skyblue; border: 2px solid blue; margin-bottom: 2em; padding: 0.5em;}
       #control #panel table {border: 0;}
       #control #panel table tr td {border: 0;}
+
       div.username {padding-top: 0.1em; padding-bottom: 0.1em; margin-bottom: 0.1em;}
     </style>
   </head>
@@ -93,7 +105,7 @@
           <h1>Whada <small>for administrators</small></h1>
         </div>
         <div class="row">
-          <div class="span10">
+          <div class="span8">
             <!-- primary content -->
             : if $notification {
 	    <p><span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>
@@ -112,29 +124,65 @@
               </ul>
             </div>
             
+            : if $isadmin {
+            <script type="text/javascript">
+              whada_logged_in_as_admin = true;
+            </script>
             <h3 id="privileges-admin-list-title">Whada Admin Privileges</h3> <!-- show for only admin users -->
             <div id="privileges-admin-list-wrapper">
               <ul id="privileges-admin-list">
               </ul>
             </div>
+            : }
 
           </div>
-          <div class="span4">
+          <div class="span6">
             <!-- secondary content -->
+            <h3>serch</h3>
+            <div style="margin-bottom: 2em;">
+              <input id="isearchBox" type="text" style="border: 1px solid silver;" />
+            </div>
 
             <div id="control" class="ui-widget ui-corner-all">
-              <div id="panel" class="ui-widget">
-                <table>
-                  <tr><td><strong>target: </strong></td><td> tagomoris </td></tr>
-                  <tr><td>hoge</td><td>pospospos</td>
-                </table>
+              <div id="checker" class="ui-widget">
+                <h2>check privilege</h2>
+                <dl>
+                  <dt style="font-size: large;">for user</dt>
+                  <dd style="margin-bottom: 1em;">
+                    <input id="checker_username" type="text" style="width: 13em;" placeholder="username" />
+                  </dd>
+                  <dt style="font-size: large;">for privilege label</dt>
+                  <dd>
+                    <input id="checker_privilege" type="text" style="width: 13em;" placeholder="privilege" />
+                    <a class="checker_button" href="#">execute</a>
+                  </dd>
+                </dl>
               </div>
             </div>
 
-            <h3>serch</h3>
-            <div>
-              <input id="isearchBox" type="text" style="border: 1px solid silver;" />
+            : if $isadmin {
+            <div id="control" class="ui-widget ui-corner-all">
+              <div id="operator" class="ui-widget">
+              </div>
             </div>
+
+            <div id="control" class="ui-widget ui-corner-all">
+              <div id="panel" class="ui-widget">
+                <dl>
+                  <dt style="font-size: large;">add user</dt>
+                  <dd style="margin-bottom: 1em;">
+                    <input type="text" name="create_user_name" style="width: 13em;" placeholder="username" />
+                    <a class="panel_button" href="#">execute</a>
+                  </dd>
+                  <dt style="font-size: large;">add privilege</dt>
+                  <dd>
+                    <input type="text" name="create_priv_name" style="width: 13em;" placeholder="label" />
+                    <a class="panel_button" href="#">execute</a>
+                  </dd>
+                </dl>
+              </div>
+            </div>
+            : }
 
             <h3>your privileges</h3>
             <div>
