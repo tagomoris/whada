@@ -97,6 +97,19 @@ sub save_priv_data {
     };
 }
 
+sub drop_priv_data {
+    my $this = shift;
+    my $priv = shift;
+    try {
+        my $sth = ($this->storage())->prepare('DELETE FROM privs WHERE name=?');
+        $sth->execute($priv);
+        return 1;
+    } catch {
+        warnf 'failed to delete priv data:' . $priv;
+        return 0;
+    };
+}
+
 sub user_data {
     my $this = shift;
     my $username = shift;
@@ -140,6 +153,19 @@ sub save_user_data {
         $sth->execute($data->{username}, $json, $json);
     } catch {
         warnf 'failed to jsonize or insert user data:' . ddf($data);
+    };
+}
+
+sub drop_user_data {
+    my $this = shift;
+    my $username = shift;
+    try {
+        my $sth = ($this->storage())->prepare('DELETE FROM users WHERE name=?');
+        $sth->execute($username);
+        return 1;
+    } catch {
+        warnf 'failed to drop user:' . $username;
+        return 0;
     };
 }
 
