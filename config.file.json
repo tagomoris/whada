@@ -1,0 +1,16 @@
+{
+  "load_path":[
+    "/Users/tagomoris/Documents/ldwhada/lib",
+    "/home/edge-dev/ldwhada"
+  ],
+  "auth_source":{
+    "type":"file",
+    "path":"/tmp/whada.authfile",
+    "salt":"f3j2q"
+  },
+  "storage":{
+    "type":"DB",
+    "host":"localhost",
+    "username":"root"
+  }
+}
