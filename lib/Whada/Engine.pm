@@ -17,7 +17,7 @@ sub authorize {
     croak 'dictionary not found' unless $dictionary;
     croak 'failed to init logger' unless $logger;
 
-    return drive($credential, $logger, $opts->{default_privilege}, 0, sub {
+    return drive($credential, $logger, 0, sub {
                      return $dictionary->entry(shift);
                  });
 }
@@ -33,13 +33,13 @@ sub authenticate {
     croak 'dictionary not found' unless $dictionary;
     croak 'failed to init logger' unless $logger;
 
-    return drive($credential, $logger, $opts->{default_privilege}, 1, sub {
+    return drive($credential, $logger, 1, sub {
                      return $dictionary->authenticate(shift);
                  });
 }
 
 sub drive {
-    my ($credential, $logger, $default_priv, $with_authentication, $sub) = @_;
+    my ($credential, $logger, $with_authentication, $sub) = @_;
 
     my $authorized_check = Whada::PrivStore->check($credential);
     my $authorized = 0;
@@ -50,15 +50,6 @@ sub drive {
         $entry = $sub->($credential);
     }
     elsif (defined $authorized_check) {
-        # not authorized
-        $entry = undef;
-    }
-    # undef of authorized_check means unknown privilege label
-    elsif (defined $default_priv and $default_priv eq 'allowed') {
-        $authorized = 1;
-        $entry = $sub->($credential);
-    }
-    elsif (defined $default_priv and $default_priv eq 'denied') {
         # not authorized
         $entry = undef;
     }

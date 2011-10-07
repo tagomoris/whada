@@ -62,7 +62,6 @@ sub load_external_modules {
 sub storage_params {
     my $self = shift;
 
-    # default is KT default port of localhost
     return {host => 'localhost', username => 'root', password => ''} unless $self->{storage};
 
     if (defined $self->{storage}->{type} and $self->{storage}->{type} eq 'DB') {
@@ -108,8 +107,9 @@ sub engine_params {
     return (
         credential => $credential,
         dictionary => $dictionary,
-        logger => Whada::Logger->new('WhadaWebAdmin', (($self->{logger} && $self->{logger}->{path}) || '/tmp/whada.admin.log')),
-        default_privilege => 'denied'
+        logger => Whada::Logger->new(
+            (($self->{logger} && $self->{logger}->{label}) || 'WhadaWebAdmin'),
+            (($self->{logger} && $self->{logger}->{path}) || '/tmp/whada.admin.log')),
     );
 }
 
