@@ -171,10 +171,15 @@ post '/login' => [qw/check_authenticated/] => sub {
     my $username = $c->req->param('username');
     my $password = $c->req->param('password');
 
+    warnf 'login challenging:' . ddf([user => $username, pass => $password]);
+
     my $session = $c->stash->{session};
     my $entry;
     try {
         my @params = $self->config->engine_params($username, $password, 'WHADA');
+
+        warnf 'Engine Auth Params:' . ddf(\@params);
+
         $entry = Whada::Engine->authenticate(@params);
     } catch {
         print STDERR "perl backend search failed with error: $_\n";
