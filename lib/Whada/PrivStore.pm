@@ -228,7 +228,10 @@ sub check {
     my $type = $this->priv_type($priv);
     my $privs = $this->privileges($credential);
 
-    return undef unless defined $type;
+    unless (defined $type) {
+        warnf 'undefined privilege:' . $priv;
+        return undef;
+    }
     if ($type eq 'always_allow') {
         return 1;
     }
