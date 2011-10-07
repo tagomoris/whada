@@ -8,6 +8,8 @@ use base qw/Whada::Dictionary/;
 
 use Net::LDAP;
 
+use Log::Minimal;
+
 sub entry {
     my $self = shift;
     my $credential = shift;
@@ -43,12 +45,17 @@ sub authenticate {
     my $credential = shift;
     my $entry = $self->entry($credential);
 
+    warnf 'Dictionary::LDAP entry search:' . ddf($entry);
+
     return undef unless $entry and scalar(@$entry) == 1;
     my $dn = $entry->[0]->dn();
+
+    warnf 'authenticate dn:' . $dn;
 
     my $config = $self->{config};
     my $ldap = Net::LDAP->new($config->{server});
     my $mesg = $ldap->bind($dn, password => $credential->password);
+    warnf 'bind result:' . $mesg;
     $ldap->unbind;
     $ldap->disconnect;
     undef $ldap;
