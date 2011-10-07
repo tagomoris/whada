@@ -17,6 +17,8 @@ requires 'Class::Accessor::Lite';
 
 requires 'Log::Minimal';
 
+requires 'Digest::SHA';
+
 requires 'Net::LDAP';
 requires 'Net::LDAP::Filter';
 requires 'File::Stamped';
