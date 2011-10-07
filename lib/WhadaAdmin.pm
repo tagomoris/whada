@@ -208,13 +208,15 @@ get '/logout' => [qw/check_authenticated/] => sub {
 get '/privs' => [qw/require_authenticated/] => sub {
     my ($self, $c) = @_;
     my $privs = Whada::PrivStore->priv_data_list();
-    $c->render_json([grep {$_->{name} !~ /^WHADA/} @{$privs}]);
+    local ($a,$b);
+    $c->render_json([sort {$a->{name} cmp $b->{name}} grep {$_->{name} !~ /^WHADA/} @{$privs}]);
 };
 
 get '/admin_privs' => [qw/require_authenticated_admin/] => sub {
     my ($self, $c) = @_;
     my $privs = Whada::PrivStore->priv_data_list();
-    $c->render_json([grep {$_->{name} =~ /^WHADA/} @{$privs}]);
+    local ($a,$b);
+    $c->render_json([sort {$a->{name} cmp $b->{name}} grep {$_->{name} =~ /^WHADA/} @{$privs}]);
 };
 
 get '/priv/:privname' => [qw/require_authenticated/] => sub {
@@ -224,45 +226,66 @@ get '/priv/:privname' => [qw/require_authenticated/] => sub {
 
 post '/priv/update' => [qw/require_authenticated_admin/] => sub {
     my ($self, $c) = @_;
-    warnf ddf
     my $privilege = uc($c->req->parameters->{privilege});
     unless (Whada::PrivStore->priv_data($privilege)) {
-        $c->render_json({result => JSON::false, message => 'unknown privilege:' . $privilege});
-        return;
+        return $c->render_json({result => JSON::false, message => 'unknown privilege:' . $privilege});
     }
     my $dst_type = $c->req->parameters->{dst_type};
     unless (Whada::PrivStore->check_priv_type($dst_type)) {
-        warnf 'wrong privilege type:' . $dst_type;
-        $c->render_json({result => JSON::false, message => 'wrong privilege type:' . $dst_type});
-        return;
+        return $c->render_json({result => JSON::false, message => 'wrong privilege type:' . $dst_type});
     }
     my $root_admin_priv = 'WHADA+ADMIN+' . (split(/\+/, $privilege))[0];
-    my $check = Whada::PrivStore->check(Whada::Credential->new({
+    my $check = ($c->stash->{session}->get('is_admin')) || Whada::PrivStore->check(Whada::Credential->new({
         username => $c->stash->{username},
         privilege => $root_admin_priv,
     }));
     unless ($check) {
-        $c->render_json({result => JSON::false, message => 'permission denied: you do not have privilege:' . $root_admin_priv});
-        return;
+        return $c->render_json({result => JSON::false, message => 'permission denied: you do not have privilege:' . $root_admin_priv});
     }
-    try {
-        Whada::PrivStore->set_priv_type($privilege, $dst_type);
-        $c->render_json({result => JSON::true, message => 'privilege type changed:' . $dst_type});
-    } catch {
-        warnf 'failed to save privilege:' . $privilege . ', error:' . ddf($_);
-        $c->render_json({result => JSON::false, message => 'unknown error (maybe database error)'});
-    };
+    Whada::PrivStore->set_priv_type($privilege, $dst_type);
+    $c->render_json({result => JSON::true, message => 'privilege type changed:' . $dst_type});
 };
 
 post '/priv/create' => [qw/require_authenticated_admin/] => sub {
+    my ($self, $c) = @_;
+    my $privilege = uc($c->req->parameters->{target});
+    if (Whada::PrivStore->priv_data($privilege)->{type}) {
+        return $c->render_json({result => JSON::false, message => 'privilege already exists:' . $privilege});
+    }
+    my $root_admin_priv = 'WHADA+ADMIN+' . (split(/\+/, $privilege))[0];
+    my $check = ($c->stash->{session}->get('is_admin')) || Whada::PrivStore->check(Whada::Credential->new({
+        username => $c->stash->{username},
+        privilege => $root_admin_priv,
+    }));
+    unless ($check) {
+        return $c->render_json({result => JSON::false, message => 'permission denied: you do not have privilege:' . $root_admin_priv});
+    }
+    Whada::PrivStore->set_priv_type($privilege, 'default_deny');
+    $c->render_json({result => JSON::true, message => 'privilege created:' . $privilege, ', type:default_deny'});
 };
 
 post '/priv/drop' => [qw/require_authenticated_admin/] => sub {
+    my ($self, $c) = @_;
+    my $privilege = uc($c->req->parameters->{target});
+    unless (Whada::PrivStore->priv_data($privilege)) {
+        return $c->render_json({result => JSON::false, message => 'privilege does not exist:' . $privilege});
+    }
+    my $root_admin_priv = 'WHADA+ADMIN+' . (split(/\+/, $privilege))[0];
+    my $check = ($c->stash->{session}->get('is_admin')) || Whada::PrivStore->check(Whada::Credential->new({
+        username => $c->stash->{username},
+        privilege => $root_admin_priv,
+    }));
+    unless ($check) {
+        return $c->render_json({result => JSON::false, message => 'permission denied: you do not have privilege:' . $root_admin_priv});
+    }
+    Whada::PrivStore->drop_priv_data($privilege);
+    $c->render_json({result => JSON::true, message => 'privilege dropped:' . $privilege});
 };
 
 get '/users' => [qw/require_authenticated/] => sub {
     my ($self, $c) = @_;
-    $c->render_json(Whada::PrivStore->user_data_list());
+    local ($a, $b);
+    $c->render_json([sort {$a->{username} cmp $b->{username}} @{Whada::PrivStore->user_data_list()}]);
 };
 
 get '/user/:username' => [qw/require_authenticated/] => sub {
@@ -287,34 +310,45 @@ post '/user/update' => [qw/require_authenticated_admin/] => sub {
         return $c->render_json({result => JSON::false, message => 'unknown privilege:' . $privilege});
     }
     my $root_admin_priv = 'WHADA+ADMIN+' . (split(/\+/, $privilege))[0];
-    warnf ddf($c->stash);
-    my $check = Whada::PrivStore->check(Whada::Credential->new({
+    my $check = ($c->stash->{session}->get('is_admin')) || Whada::PrivStore->check(Whada::Credential->new({
         username => $c->stash->{username},
         privilege => $root_admin_priv,
     }));
     unless ($check) {
         return $c->render_json({result => JSON::false, message => 'permission denied: you do not have privilege:' . $root_admin_priv});
     }
-    try {
-        if ($operation eq 'allow') {
-            Whada::PrivStore->allow_privileges($target_user_credential, $privilege);
-        }elsif ($operation eq 'deny') {
-            Whada::PrivStore->deny_privileges($target_user_credential, $privilege);
-        }elsif ($operation eq 'remove') {
-            delete $target->{privileges}->{$privilege};
-            Whada::PrivStore->save_user_data($target);
-        }
-        $c->render_json({result => JSON::true, message => 'user privilege successfully updated.'});
-    } catch {
-        warnf 'failed to save user data:' . $target_username . ', error:' . ddf($_);
-        $c->render_json({result => JSON::false, message => 'unknown error (maybe database error)'});
-    };
+    if ($operation eq 'allow') {
+        Whada::PrivStore->allow_privileges($target_user_credential, $privilege);
+    }elsif ($operation eq 'deny') {
+        Whada::PrivStore->deny_privileges($target_user_credential, $privilege);
+    }elsif ($operation eq 'remove') {
+        delete $target->{privileges}->{$privilege};
+        Whada::PrivStore->save_user_data($target);
+    }
+    $c->render_json({result => JSON::true, message => 'user privilege successfully updated.'});
 };
 
 post '/user/create' => [qw/require_authenticated_admin/] => sub {
+    my ($self, $c) = @_;
+    my $username = $c->req->parameters->{target};
+    my $data = Whada::PrivStore->user_data($username);
+    if ($data->{privileges}) {
+        return $c->render_json({result => JSON::false, message => 'user already exists:' . $username});
+    }
+    $data->{privileges} = {};
+    Whada::PrivStore->save_user_data($data);
+    $c->render_json({result => JSON::true, message => 'user created:' . $username});
 };
 
 post '/user/drop' => [qw/require_authenticated_admin/] => sub {
+    my ($self, $c) = @_;
+    my $username = $c->req->parameters->{target};
+    my $data = Whada::PrivStore->user_data($username);
+    unless ($data->{privileges}) {
+        return $c->render_json({result => JSON::false, message => 'user does not exist:' . $username});
+    }
+    Whada::PrivStore->drop_user_data($username);
+    $c->render_json({result => JSON::true, message => 'user dropped:' . $username});
 };
 
 get '/check' => [qw/require_authenticated/] => sub {

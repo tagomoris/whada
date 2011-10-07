@@ -204,13 +204,23 @@
                 <dl>
                   <dt style="font-size: large;">add user</dt>
                   <dd style="margin-bottom: 1em;">
-                    <input type="text" name="create_user_name" style="width: 13em;" placeholder="username" />
-                    <a class="panel_button" href="#">execute</a>
+                    <input type="text" id="create_user_name" style="width: 13em;" placeholder="username" />
+                    <a class="panel_button" id="panel_create_user" href="#">execute</a>
+                  </dd>
+                  <dt style="font-size: large;">drop user</dt>
+                  <dd style="margin-bottom: 1em;">
+                    <input type="text" id="drop_user_name" style="width: 13em;" placeholder="username" />
+                    <a class="panel_button" id="panel_drop_user" href="#">execute</a>
                   </dd>
                   <dt style="font-size: large;">add privilege</dt>
+                  <dd style="margin-bottom: 1em;">
+                    <input type="text" id="create_priv_name" style="width: 13em;" placeholder="label" />
+                    <a class="panel_button" id="panel_create_priv" href="#">execute</a>
+                  </dd>
+                  <dt style="font-size: large;">drop privilege</dt>
                   <dd>
-                    <input type="text" name="create_priv_name" style="width: 13em;" placeholder="label" />
-                    <a class="panel_button" href="#">execute</a>
+                    <input type="text" id="drop_priv_name" style="width: 13em;" placeholder="label" />
+                    <a class="panel_button" id="panel_drop_priv" href="#">execute</a>
                   </dd>
                 </dl>
               </div>

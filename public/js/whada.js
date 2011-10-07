@@ -28,6 +28,9 @@ function load_page() {
     $('.operator_button')
       .unbind()
       .click(operator_execute);
+    $('.panel_button')
+      .unbind()
+      .click(panel_execute);
 
     $('#panel_bar')
       .unbind()
@@ -55,15 +58,19 @@ function re_assign_events() {
     .live('click', function() {
       $(this).siblings('ul').slideToggle(80);
       if ($(this).hasClass('username')) {
-        $('#checker_username').val($(this).text());
+        var username = $(this).text();
+        $('#checker_username').val(username);
         if (whada_logged_in_as_admin) {
-          $('#operator_user').text($(this).text());
+          $('#operator_user').text(username);
+          $('#drop_user_name').val(username);
         }
       }
       if ($(this).hasClass('privilege')) {
-        $('#checker_privilege').val($(this).text());
+        var privname = $(this).text();
+        $('#checker_privilege').val(privname);
         if (whada_logged_in_as_admin) {
-          $('#operator_priv').text($(this).text());
+          $('#operator_priv').text(privname);
+          $('#drop_priv_name').val(privname);
         }
       }
       $('ul.items li')
@@ -182,14 +189,11 @@ function operator_execute(event){
     show_dialog('Error', 'privilege not selected', {"OK":function(){$('#dialog').dialog('close');}});
     return;
   }
+  var path;
+  var args;
   if (operation === 'always_allow' || operation === 'default_allow' || operation === 'default_deny' || operation === 'always_deny'){
-    $.post('/priv/update', {privilege:priv, dst_type:operation}, function(data){
-      if (data.result)
-        show_dialog('Success', data.message, {"OK":function(){$('#dialog').dialog('close'); reload_page();}});
-      else
-        show_dialog('Error', data.message, {"OK":function(){$('#dialog').dialog('close');}});
-    });
-    return;
+    path = '/priv/update';
+    args = {privilege:priv, dst_type:operation};
   }
   else if (operation === 'allow' || operation === 'deny' || operation === 'remove') {
     var username = $('#operator_user').text();
@@ -197,12 +201,36 @@ function operator_execute(event){
       show_dialog('Error', 'user not selected', {"OK":function(){$('#dialog').dialog('close');}});
       return;
     }
-    $.post('/user/update', {username:username, privilege:priv, operation:operation}, function(data){
-      if (data.result)
-        show_dialog('Success', data.message, {"OK":function(){$('#dialog').dialog('close'); reload_page();}});
-      else
-        show_dialog('Error', data.message, {"OK":function(){$('#dialog').dialog('close');}});
-    });
+    path = '/user/update';
+    args = {username:username, privilege:priv, operation:operation};
+  }
+  else {
+    show_dialog('Error', 'unknown operation (maybe bug):' + operation, {"OK":function(){$('#dialog').dialog('close');}});
     return;
   }
+  $.post(path, args, function(data){
+    if (data.result)
+      show_dialog('Success', data.message, {"OK":function(){$('#dialog').dialog('close'); reload_page();}});
+    else
+      show_dialog('Error', data.message, {"OK":function(){$('#dialog').dialog('close');}});
+  });
+};
+
+function panel_execute(event){
+  var matched = /^panel_([a-z]+)_([a-z]+)$/.exec($(event.target).closest('a').attr('id'));
+  var operation = (matched[1] === 'create') ? 'create' : 'drop';
+  var datatype = (matched[2] === 'user') ? 'user' : 'priv';
+  var value = $('input#' + operation + '_' + datatype + '_name').val();
+  if (value.length < 1) {
+    show_dialog('Error', 'operation target ' + operation + ' ' + datatype + ', not specified', {
+      "OK":function(){$('#dialog').dialog('close');}});
+    return;
+  }
+  var path = '/' + datatype + '/' + operation;
+  $.post(path, {target:value}, function(data){
+    if (data.result)
+      show_dialog('Success', data.message, {"OK":function(){$('#dialog').dialog('close'); reload_page();}});
+    else
+      show_dialog('Error', data.message, {"OK":function(){$('#dialog').dialog('close');}});
+  });
 };
