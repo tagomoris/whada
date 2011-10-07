@@ -17,11 +17,6 @@ requires 'Class::Accessor::Lite';
 
 requires 'Log::Minimal';
 
-
-# for 5.8.8
-requires 'Carp', 1.20;
-requires 'Digest::SHA';
-
 requires 'Net::LDAP';
 requires 'Net::LDAP::Filter';
 requires 'File::Stamped';
