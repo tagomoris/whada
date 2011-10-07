@@ -10,13 +10,14 @@ use Whada::Logger;
 use Whada::Engine;
 use Whada::PrivStore;
 
+use WhadaAdmin::Config;
+
 sub new {
     my $class = shift;
     return bless {
         converter => 'Whada::Converter', # MUST be overwritten
         dictionary => 'Whada::Dictionary', # MUST be overwritten
-        default_privilege => 'denied', # MUST be specified explicitly in subclass
-        global_config => {},
+        global_config => {}, # maybe overwritten in subclass
         config => {}
     }, $class;
 }
@@ -40,11 +41,51 @@ sub config {
     my $this = shift;
     my ($param, $value) = @_;
 
-    if ($param =~ /^whadaBackend(.+)$/) {
-        $this->{config}->{lc($1)} = $value;
+    if ($param eq 'whadaConfigFile') {
+        my $config = WhadaAdmin::Config->new($value);
+        die "auth_source not found" unless $config->{auth_source} and $config->{auth_source}->{type};
+        if ($config->{auth_source}->{type} eq 'ldap') {
+            $this->{dictionary} = 'Whada::Dictionary::LDAP';
+            my $source = $config->{auth_source};
+            if ($source->{converter_module}) {
+                $this->{converter} = $source->{converter_module};
+            }elsif ($source->{attribute}) {
+                $this->{converter} = 'Whada::Converter::LDAP';
+                Whada::Converter::LDAP->set_global_default(filter => {attribute => $source->{attribute}});
+            }else{
+                die "unknown converter pattern...";
+            }
+            $this->{config}->{server} = $source->{host};
+            $this->{config}->{binddn} = $source->{binddn};
+            $this->{config}->{bindpassword} = $source->{bindpassword};
+            $this->{config}->{base} = $source->{base};
+        }
+        elsif ($config->{auth_source}->{type} eq 'file') {
+            $this->{dictionary} = 'Whada::Dictionary::File';
+            $this->{converter} = 'Whada::Converter::LDAP';
+        }
+        else {
+            die "unknown auth_source type...";
+        }
+        die "storage not found" unless $config->{storage} and $config->{storage}->{type};
+        if ($config->{storage}->{type} eq 'DB') {
+            my $storage_conf = $config->storage_params;
+            foreach my $key (keys(%{$storage_conf})) {
+                Whada::PrivStore->set_storage_configuration($key, $storage_conf->{$key});
+            }
+        }
+        else {
+            die "unknown storage type...";
+        }
     }
-    elsif ($param =~ /^whadaStorage(.+)$/) {
-        Whada::PrivStore->set_storage_configuration(lc($1), $value);
+    elsif ($param =~ /^whada(.+)$/) {
+        my $param_name = $1;
+        if ($param_name eq 'LogPath') {
+            $this->{config}->{logpath} = $value;
+        }
+        elsif ($param_name eq 'Suffix') {
+            $this->{config}->{suffix} = $value;
+        }
     }
     return 0;
 }
@@ -65,7 +106,6 @@ sub search {
             credential => ($this->{converter})->new({ldapquery => {base => $base, filter => $filterStr}})->credential(),
             dictionary => ($this->{dictionary})->new($this->{converter}, $config),
             logger => Whada::Logger->new('slapd', $config->{logpath}),
-            default_privilege => $this->{default_privilege},
         );
     } catch {
         print STDERR "perl backend search failed with error: $_\n";
