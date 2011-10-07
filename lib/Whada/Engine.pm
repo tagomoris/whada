@@ -44,18 +44,15 @@ sub drive {
     my ($credential, $logger, $with_authentication, $sub) = @_;
 
     my $authorized_check = Whada::PrivStore->check($credential);
-    warnf 'authorized_check: '. ddf({check => $authorized_check});
     my $authorized = 0;
     my $entry = undef;
 
     if (defined $authorized_check && $authorized_check) {
         $authorized = 1;
-        warnf 'PrivStore check success.';
         $entry = $sub->($credential);
     }
     elsif (defined $authorized_check) {
         # not authorized
-        warnf 'PrivStore check failed.';
         $entry = undef;
     }
     elsif (Whada::PrivStore->global_default_privilege) {
