@@ -17,6 +17,8 @@ sub new {
     open my $fh, $self->{config}->{path};
     while (<$fh>) {
         chomp;
+        my $line = $_;
+        next if length($line) < 1;
         my ($name, $hash) = split(/\s+/, $_);
         $self->{map}->{$name} = $hash;
     }
