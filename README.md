@@ -45,11 +45,12 @@ If your system's openldap package doesn't support perl-backend, you must build o
 * Build and install
   * Extract, configure, make and make install as root (for perl path).
 
-    # tar xzf openldap-2.x.xx.tar.gz
-    # cd openldap-2.x.xx
-    # ./configure --disable-ipv6 --disable-bdb --disable-hdb --enable-wrappers --enable-ldap --enable-perl
-    # make
-    # make install
+    (as root)
+    $ tar xzf openldap-2.x.xx.tar.gz
+    $ cd openldap-2.x.xx
+    $ ./configure --disable-ipv6 --disable-bdb --disable-hdb --enable-wrappers --enable-ldap --enable-perl
+    $ make
+    $ make install
 
   * At configure, you can choose options such as ipv6, bdb, wrappers, and others.
   * But '--enable-perl' and '--enable-ldap' options are very important.
@@ -80,8 +81,9 @@ You can install mysqld in same host, or other network reachable host.
   * For system perl (or root users perlbrew environment perl)
   * cpanm strongly recommended
 
-    # cd whada
-    # cpanm -n --installdeps .
+    (as root)
+    $ cd whada
+    $ cpanm -n --installdeps .
 
   * For cpanm, see http://search.cpan.org/dist/App-cpanminus/
   * slapd cannot use extlib
@@ -101,15 +103,15 @@ JSON syntax is very rigid. You should pay attention for comma at line end of arr
 ### Privilege initial setup
 'bin/privmanage' is a utility for privilege add/remove operaitons on CLI. You must do initial setup by command below.
 
-    # bin/privmanage -i
+    $ bin/privmanage -i
 
 If you want to permit all users for all privileges that doesn't be defined explicitly, set 'global_default_privilege' as 'allowed'. (But this setting is not recommended.)
 
-    # bin/privmanage -i allowed
+    $ bin/privmanage -i allowed
 
 And you should specify administrator user account of whada, then permit whada administrator privilege for him (yourself).
 
-    # bin/privmanage -u superman -a WHADA WHADA+ADMIN
+    $ bin/privmanage -u superman -a WHADA WHADA+ADMIN
 
 Privileges are
 * WHADA: permission for whada's admin web page access, without privilege modification
