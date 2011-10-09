@@ -9,10 +9,12 @@
 'whada' can allow/deny permissions for users for each privilege labels independently of account data source. You can control these settings on web control panel, and that change is enable immediately.
 
 But now, protocols are limited:
+
 * for clients: LDAP only
 * for account data: LDAP or File (username - password hash pairs)
 
 For future:
+
 * for clients: LDAP, OpenID and OAuth(v1)
 * for account data: LDAP, File and ? (MySQL? NIS? or ...?)
 
@@ -42,15 +44,18 @@ If your system's openldap package doesn't support perl-backend, you must build o
   * We used latest release on Sep 2011, 2.4.26.
 * Build and install
   * Extract, configure, make and make install as root (for perl path).
+
     # tar xzf openldap-2.x.xx.tar.gz
     # cd openldap-2.x.xx
     # ./configure --disable-ipv6 --disable-bdb --disable-hdb --enable-wrappers --enable-ldap --enable-perl
     # make
     # make install
+
   * At configure, you can choose options such as ipv6, bdb, wrappers, and others.
   * But '--enable-perl' and '--enable-ldap' options are very important.
   * On configure, your system's perl path is specified and built slapd binary use that.
   * You can access slapd and openldap config file as below.
+
     /usr/local/libexec/slapd
     /usr/local/etc/openldap/slapd.conf
 
@@ -74,8 +79,10 @@ You can install mysqld in same host, or other network reachable host.
 * Install CPAN modules
   * For system perl (or root users perlbrew environment perl)
   * cpanm strongly recommended
+
     # cd whada
     # cpanm -n --installdeps .
+
   * For cpanm, see http://search.cpan.org/dist/App-cpanminus/
   * slapd cannot use extlib
 
