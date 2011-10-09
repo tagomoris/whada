@@ -197,7 +197,7 @@ And configure config.json as below.
         "host":"localhost",
         "port":3306,
         "username":"whada",
-        "password":"adahw"
+        "password":"whadapass"
       }
     }
 
