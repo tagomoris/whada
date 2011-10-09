@@ -44,12 +44,14 @@ If your system's openldap package doesn't support perl-backend, you must build o
     * We used latest release on Sep 2011, 2.4.26.
 * Build and install
     * Extract, configure, make and make install as root (for perl path).
+
         (as root)
         $ tar xzf openldap-2.x.xx.tar.gz
         $ cd openldap-2.x.xx
         $ ./configure --disable-ipv6 --disable-bdb --disable-hdb --enable-wrappers --enable-ldap --enable-perl
         $ make
         $ make install
+
     * At configure, you can choose options such as ipv6, bdb, wrappers, and others.
     * But '--enable-perl' and '--enable-ldap' options are very important.
     * On configure, your system's perl path is specified and built slapd binary use that.
@@ -77,9 +79,11 @@ You can install mysqld in same host, or other network reachable host.
 * Install CPAN modules
     * For system perl (or root users perlbrew environment perl)
     * cpanm strongly recommended
+
         (as root)
         $ cd whada
         $ cpanm -n --installdeps .
+
     * For cpanm, see http://search.cpan.org/dist/App-cpanminus/
     * slapd cannot use extlib
 
@@ -197,11 +201,11 @@ And configure config.json as below.
 In this environment, you can search/bind to this slapd in 2-ways.
 
 * privilege as 'ou' in search base
-  * search base: ou=FOO,dc=wada,dc=intranet
-  * filter: (uid=superman) or (user=superman) or (sAMAccountName=superman)
+    * search base: ou=FOO,dc=wada,dc=intranet
+    * filter: (uid=superman) or (user=superman) or (sAMAccountName=superman)
 * privilege as filter element
-  * search base: dc=wada,dc=intranet
-  * filter: (&(uid=superman)(privilege=FOO))
+    * search base: dc=wada,dc=intranet
+    * filter: (&(uid=superman)(privilege=FOO))
 
 If 'superman' is allowed privilege 'FOO', 'search' query returns LDAP entry with dn, its suffix is 'dc=ad,dc=yourcompany,dc=intranet'. In fact, that entry is same with result that you query with 'dc=ad,dc=yourcompany,dc=intranet' directly.
 
