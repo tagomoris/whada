@@ -22,12 +22,12 @@ For future:
 
 * UNIX like system (Linux, Mac OSX, ...)
 * Perl (recent version)
-  * developed on perl 5.14.x
+    * developed on perl 5.14.x
 * MySQL 5.x
 * Slapd (OpenLDAP Server) with perl-backend support
-  * Debian package seems OK
-  * RPM (for CentOS 5) and Installed on OSX doesn't support perl-backend
-  * Build process is in 'Environment Setting' section
+    * Debian package seems OK
+    * RPM (for CentOS 5) and Installed on OSX doesn't support perl-backend
+    * Build process is in 'Environment Setting' section
 
 ## Environment Setting
 
@@ -40,20 +40,20 @@ Whada requires modern perl, and doesn't works well with 5.8.x. So your system pe
 If your system's openldap package doesn't support perl-backend, you must build openldap from source with perl-backend.
 
 * Download from OpenLDAP source tarball
-  * http://www.openldap.org/software/download/
-  * We used latest release on Sep 2011, 2.4.26.
+    * http://www.openldap.org/software/download/
+    * We used latest release on Sep 2011, 2.4.26.
 * Build and install
-  * Extract, configure, make and make install as root (for perl path).
-            (as root)
-            $ tar xzf openldap-2.x.xx.tar.gz
-            $ cd openldap-2.x.xx
-            $ ./configure --disable-ipv6 --disable-bdb --disable-hdb --enable-wrappers --enable-ldap --enable-perl
-            $ make
-            $ make install
-  * At configure, you can choose options such as ipv6, bdb, wrappers, and others.
-  * But '--enable-perl' and '--enable-ldap' options are very important.
-  * On configure, your system's perl path is specified and built slapd binary use that.
-  * You can access slapd and openldap config file as below.
+    * Extract, configure, make and make install as root (for perl path).
+        (as root)
+        $ tar xzf openldap-2.x.xx.tar.gz
+        $ cd openldap-2.x.xx
+        $ ./configure --disable-ipv6 --disable-bdb --disable-hdb --enable-wrappers --enable-ldap --enable-perl
+        $ make
+        $ make install
+    * At configure, you can choose options such as ipv6, bdb, wrappers, and others.
+    * But '--enable-perl' and '--enable-ldap' options are very important.
+    * On configure, your system's perl path is specified and built slapd binary use that.
+    * You can access slapd and openldap config file as below.
         /usr/local/libexec/slapd
         /usr/local/etc/openldap/slapd.conf
 
@@ -72,16 +72,16 @@ You can install mysqld in same host, or other network reachable host.
 ### Whada
 
 * Download 'whada' tarball and extract it, or clone directly
-  * https://github.com/tagomoris/whada
-  * as root user
+    * https://github.com/tagomoris/whada
+    * as root user
 * Install CPAN modules
-  * For system perl (or root users perlbrew environment perl)
-  * cpanm strongly recommended
+    * For system perl (or root users perlbrew environment perl)
+    * cpanm strongly recommended
         (as root)
         $ cd whada
         $ cpanm -n --installdeps .
-  * For cpanm, see http://search.cpan.org/dist/App-cpanminus/
-  * slapd cannot use extlib
+    * For cpanm, see http://search.cpan.org/dist/App-cpanminus/
+    * slapd cannot use extlib
 
 ## Setup whada
 
@@ -89,7 +89,7 @@ You can install mysqld in same host, or other network reachable host.
 Write configuration json file. whada uses 'config.json' file in whada root directory (ex: 'whada/'). See 'config.template.json'.
 
 * 'load_path' section: list of library paths for your whada extension packages
-  * 'load_path' section is for whada web admin page. slapd backend uses library path configuration on slapd.conf.
+    * 'load_path' section is for whada web admin page. slapd backend uses library path configuration on slapd.conf.
 * 'auth_source' section: your LDAP server information
 * 'storage' section: MySQL connection settings 
 
@@ -131,19 +131,19 @@ For client authentication on LDAP protocol, slapd.conf configuration needed.
 You should check original ldap server configuration, and setup two backend, perl-backend and ldap-backend in slapd.conf.
 
 * Original ldap specifications:
-  * server name: ldap.server.intranet
-  * port: 389
-  * suffix for your ldap domain: dc=ad,dc=yourcompany,dc=intranet
-  * dn for bind: cn=Manager,cn=Users,dc=ad,dc=yourcompany,dc=intranet
-  * password for bind: secret
-  * search base cn: cn=Users,dc=ad,dc=yourcompany,dc=intranet
-  * attribute name equals to account name: sAMAccountName
+    * server name: ldap.server.intranet
+    * port: 389
+    * suffix for your ldap domain: dc=ad,dc=yourcompany,dc=intranet
+    * dn for bind: cn=Manager,cn=Users,dc=ad,dc=yourcompany,dc=intranet
+    * password for bind: secret
+    * search base cn: cn=Users,dc=ad,dc=yourcompany,dc=intranet
+    * attribute name equals to account name: sAMAccountName
 * Whada specifications:
-  * suffix for your whada domain: dc=whada,dc=intranet
-  * whada path: /root/whada
-  * configuration file path: /root/whada/config.json
-  * dn for bind: cn=binduser,dc=whada,dc=intranet
-  * password for bind: whadaseret
+    * suffix for your whada domain: dc=whada,dc=intranet
+    * whada path: /root/whada
+    * configuration file path: /root/whada/config.json
+    * dn for bind: cn=binduser,dc=whada,dc=intranet
+    * password for bind: whadaseret
 
 In this case, you should configure slapd as below.
 
