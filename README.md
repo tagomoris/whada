@@ -44,20 +44,22 @@ If your system's openldap package doesn't support perl-backend, you must build o
     * We used latest release on Sep 2011, 2.4.26.
 * Build and install
     * Extract, configure, make and make install as root (for perl path).
-
-        (as root)
-        $ tar xzf openldap-2.x.xx.tar.gz
-        $ cd openldap-2.x.xx
-        $ ./configure --disable-ipv6 --disable-bdb --disable-hdb --enable-wrappers --enable-ldap --enable-perl
-        $ make
-        $ make install
-
     * At configure, you can choose options such as ipv6, bdb, wrappers, and others.
     * But '--enable-perl' and '--enable-ldap' options are very important.
     * On configure, your system's perl path is specified and built slapd binary use that.
     * You can access slapd and openldap config file as below.
         /usr/local/libexec/slapd
         /usr/local/etc/openldap/slapd.conf
+
+To build binary, do commands below.
+
+    (as root)
+    $ tar xzf openldap-2.x.xx.tar.gz
+    $ cd openldap-2.x.xx
+    $ ./configure --disable-ipv6 --disable-bdb --disable-hdb --enable-wrappers --enable-ldap --enable-perl
+    $ make
+    $ make install
+
 
 ### MySQL
 
@@ -79,13 +81,14 @@ You can install mysqld in same host, or other network reachable host.
 * Install CPAN modules
     * For system perl (or root users perlbrew environment perl)
     * cpanm strongly recommended
-
-        (as root)
-        $ cd whada
-        $ cpanm -n --installdeps .
-
     * For cpanm, see http://search.cpan.org/dist/App-cpanminus/
     * slapd cannot use extlib
+
+Install CPAN modules, do commands below.
+
+    (as root)
+    $ cd whada
+    $ cpanm -n --installdeps .
 
 ## Setup whada
 
@@ -101,17 +104,13 @@ JSON syntax is very rigid. You should pay attention for comma at line end of arr
 
 ### Privilege initial setup
 'bin/privmanage' is a utility for privilege add/remove operaitons on CLI. You must do initial setup by command below.
-
-    $ bin/privmanage -i
-
+    `$ bin/privmanage -i`
 If you want to permit all users for all privileges that doesn't be defined explicitly, set 'global_default_privilege' as 'allowed'. (But this setting is not recommended.)
 
     $ bin/privmanage -i allowed
 
 And you should specify administrator user account of whada, then permit whada administrator privilege for him (yourself).
-
-    $ bin/privmanage -u superman -a WHADA WHADA+ADMIN
-
+    `$ bin/privmanage -u superman -a WHADA WHADA+ADMIN`
 Privileges are
 * WHADA: permission for whada's admin web page access, without privilege modification
 * WHADA+ADMIN: permission as whada administrator (all configuration changes are allowed with this)
@@ -121,9 +120,7 @@ Privileges are
 ### Whada admin page
 
 If you set LDAP configuration properly, you can show whada admin page via browser. Launch app.psgi.
-
-    # plackup app.psgi
-
+    `# plackup app.psgi`
 Access http://localhost:5000/ and input your account name and password. With any troubles, see /tmp/whada.admin.log .
 
 For normal operations, you can run admin web app with daemonize tools such as daemontools, supervisord or any others.
