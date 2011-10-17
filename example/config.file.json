@@ -5,7 +5,7 @@
   ],
   "auth_source":{
     "type":"file",
-    "path":"/tmp/whada.authfile",
+    "path":"/Users/tagomoris/whada.auth",
     "salt":"f3j2q"
   },
   "storage":{
