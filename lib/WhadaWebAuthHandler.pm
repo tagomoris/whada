@@ -1,4 +1,4 @@
-package WhadaAdmin;
+package WhadaWebAuthHandler;
 
 use strict;
 use warnings;
