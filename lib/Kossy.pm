@@ -5,6 +5,7 @@ package Kossy;
 use strict;
 use warnings;
 use utf8;
+use Encode qw//;
 use Carp qw//;
 use Scalar::Util qw//;
 use Plack::Builder;
