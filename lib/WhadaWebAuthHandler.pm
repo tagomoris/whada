@@ -17,7 +17,7 @@ use JSON;
 use Kossy;
 use Log::Minimal;
 
-use WhadaAdmin::Config;
+use WhadaWebAuth::Config;
 
 use Whada::Engine;
 use Whada::PrivStore;
