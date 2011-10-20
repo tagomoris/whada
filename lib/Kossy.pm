@@ -74,7 +74,7 @@ sub build_app {
         });
         $c->res->content_type('text/html; charset=UTF-8');
         my $match = try {
-            local $env->{PATH_INFO} = Encode::decode_utf8( $env->{PATH_INFO}, 1 );
+            local $env->{PATH_INFO} = Encode::decode_utf8( $env->{PATH_INFO}, Encode::FB_CROAK | Encode::LEAVE_SRC );
             $router->match($env)
         }
         catch {
