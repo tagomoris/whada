@@ -118,11 +118,41 @@ filter 'require_authenticated' => sub {
     }
 };
 
+filter 'add_openid_headers' => sub {
+    my $app = shift;
+    sub {
+        my ($self, $c) = @_;
+        return $app->($self, $c) unless $self->config->{webauth} && $self->config->{webauth}->{openid};
+        return $app->($self, $c) unless $c->req->path =~ m!^/openid/!;
+
+        my $hostname = $self->config->{webauth}->{openid}->{hostname};
+        my $openid_args = openid_parse_path($c->req->path);
+        if ($openid_args->{operation} and $openid_args->{operation} eq 'u') {
+            $c->res->header('X-XRDS-Location' => "http://$hostname/openid/" . $openid_args->{privilege} . "/signon.xrds");
+        }
+        else {
+            $c->res->header('X-XRDS-Location' => "http://$hostname/openid/" . $openid_args->{privilege} . "/server.xrds");
+        }
+        $app->($self, $c);
+    }
+};
+
 ######
 # OpenID setup_url => 'http://hostname' + '/openid/:priv/setup'
 # OpenID endpoint_url => 'http://hostname' + '/openid/:priv/auth'
 # OpenID identity url => 'http://hostname' + '/openid/:priv/user/:username'
 ######
+
+sub openid_parse_path {
+    my $path = shift;
+    my @items = ($path =~ m!^/openid/([+a-zA-Z]+)(/(signon\.xrds|server\.xrds|setup|auth|u)(/(.*))?)?$!);
+    return undef unless @items;
+    return {
+        operation => $items[2],
+        privilege => $items[0],
+        username => $items[4],
+    };
+}
 
 sub openid_server {
     my $self = shift;
@@ -138,11 +168,12 @@ sub openid_server {
     my $hostname = $config_openid->{hostname};
     my $secret_salt = $config_openid->{server_secret_salt} || (sub {use Sys::Hostname qw//; Sys::Hostname::hostname();})->();
 
-    my $privilege = ($c->req->path =~ m!^/openid/([+a-zA-Z]+)/(setup|auth|u/)!)[1];
-    unless ($privilege) {
+    my $openid_args = openid_parse_path($c->req->path);
+    unless ($openid_args) {
         warnf "unknown path for openid_server: " . $c->req->path;
         return undef;
     }
+    my $privilege = $openid_args->{privilege};
 
     return Net::OpenID::Server->new(
         get_args     => $env,
@@ -164,6 +195,60 @@ sub openid_server {
 get '/' => [qw/check_authenticated/] => sub {
     my ($self, $c) = @_;
     #TODO login form or none
+};
+
+get '/openid/:priv/signon.xrds' => sub {
+    my ($self, $c) = @_;
+    unless ($self->config->{webauth} && $self->config->{webauth}->{openid}) {
+        $c->halt(404);
+    }
+    my $openid_args = openid_parse_path($c->req->path);
+    my $privilege = $openid_args->{privilege};
+    my $hostname = $self->config->{webauth}->{openid}->{hostname};
+    $c->res->status(200);
+    $c->res->content_type('application/xrds+xml');
+    $c->res->body(<<EOXRDS);
+<?xml version="1.0" encoding="UTF-8"?>
+<xrds:XRDS
+    xmlns:xrds="xri://\$xrds"
+    xmlns:openid="http://openid.net/xmlns/1.0"
+    xmlns="xri://\$xrd*(\$v*2.0)">
+  <XRD>
+    <Service priority="0">
+      <Type>http://specs.openid.net/auth/2.0/signon</Type>
+      <URI>http://$hostname/openid/$privilege/auth</URI>
+    </Service>
+  </XRD>
+</xrds:XRDS>
+EOXRDS
+    $c->res;
+};
+
+get '/openid/:priv/server.xrds' => sub {
+    my ($self, $c) = @_;
+    unless ($self->config->{webauth} && $self->config->{webauth}->{openid}) {
+        $c->halt(404);
+    }
+    my $openid_args = openid_parse_path($c->req->path);
+    my $privilege = $openid_args->{privilege};
+    my $hostname = $self->config->{webauth}->{openid}->{hostname};
+    $c->res->status(200);
+    $c->res->content_type('application/xrds+xml');
+    $c->res->body(<<EOXRDS);
+<?xml version="1.0" encoding="UTF-8"?>
+<xrds:XRDS
+    xmlns:xrds="xri://\$xrds"
+    xmlns:openid="http://openid.net/xmlns/1.0"
+    xmlns="xri://\$xrd*(\$v*2.0)">
+  <XRD>
+    <Service priority="0">
+      <Type>http://specs.openid.net/auth/2.0/server</Type>
+      <URI>http://$hostname/openid/$privilege/auth</URI>
+    </Service>
+  </XRD>
+</xrds:XRDS>
+EOXRDS
+    $c->res;
 };
 
 get '/openid/:priv/setup' => sub {
@@ -212,26 +297,30 @@ get '/openid/:priv/auth' => [qw/check_authenticated/] => sub {
     }
 };
 
-get '/openid/:priv/u/:username' => sub {
+get '/openid/:priv/u/:username' => [qw/check_authenticated add_openid_headers/] => sub {
     my ($self, $c) = @_;
-    #TODO check if this handler is requested or not in openid auth workflow
-    my $server = $self->openid_server($c);
-    my ($type, $data) = $server->handle_page;
-    if ($type eq "redirect") {
-        $c->redirect($data);
-    } elsif ($type eq "setup") {
-        my %setup_opts = %$data;
-        # ... show them setup page(s), with options from setup_map
-        # it's then your job to redirect them at the end to "return_to"
-        # (or whatever you've named it in setup_map)
-        warnf "setup with:" . ddf($data);
-        $c->halt('debugging!');
-    } else {
-        $c->res->status(200);
-        $c->res->content_type($type);
-        $c->res->body($data);
-        $c->res;
+    my $openid_args = openid_parse_path($c->req->path);
+    my $hostname = $self->config->{webauth}->{openid}->{hostname};
+
+    my $authorized = 'unknown';
+    if ($c->stash->{username} and $c->stash->{username} eq $c->args->{username}) {
+        my $entry = try {
+            my @params = $self->config->engine_params($openid_args->{username}, undef, $openid_args->{privilege});
+            Whada::Engine->authorize(@params);
+        } catch {
+            print STDERR "authorize test failed with error: $_\n";
+            undef;
+        };
+        $authorized = $entry ? 'ALLOWED' : 'REJECTED';
     }
+    $c->render('identity.tx', {
+        logged_in => $c->stash->{session}->get('logged_in'),
+        username => $c->args->{username},
+        privilege => $c->args->{priv},
+        authorized => $authorized,
+        auth_url => "http://$hostname/openid/" . $openid_args->{privilege} . '/auth',
+        identity_url => "http://$hostname/openid/" . $openid_args->{privilege} . '/u/' . $openid_args->{username},
+    })
 };
 
 post '/login' => [qw/check_authenticated/] => sub {
@@ -244,7 +333,7 @@ post '/login' => [qw/check_authenticated/] => sub {
         my @params = $self->config->engine_params($username, $password, 'WHADA');
         $entry = Whada::Engine->authenticate(@params);
     } catch {
-        print STDERR "perl backend search failed with error: $_\n";
+        print STDERR "authentication failed with error: $_\n";
         $entry = undef;
     };
 
