@@ -16,9 +16,6 @@ requires 'Try::Tiny', 0.09;
 requires 'Class::Accessor::Lite';
 
 requires 'Log::Minimal';
-
-requires 'Net::LDAP';
-requires 'Net::LDAP::Filter';
 requires 'File::Stamped';
 
 requires 'JSON';
@@ -29,6 +26,11 @@ requires 'DBD::mysql';
 requires 'HTTP::Session';
 requires 'HTTP::Session::Store::DBI';
 requires 'HTTP::Session::State::Cookie';
+
+requires 'Net::LDAP';
+requires 'Net::LDAP::Filter';
+requires 'Net::OpenID::Server';
+requires 'Math::BigInt::GMP';
 
 tests 't/*.t';
 test_requires 'Test::More';

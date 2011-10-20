@@ -1,4 +1,4 @@
-package WhadaAdmin::Config;
+package WhadaWebAuth::Config;
 
 use strict;
 use warnings;
@@ -26,7 +26,7 @@ sub new {
     my $self = bless $json_obj, $this;
 
     $self->{session} ||= {};
-    $self->{session}->{expires} ||= 1800; # 30 min
+    $self->{session}->{expires} ||= 86400 * 3; # 3 day
     $self->load_external_modules();
 
     # try engine_params
@@ -108,8 +108,8 @@ sub engine_params {
         credential => $credential,
         dictionary => $dictionary,
         logger => Whada::Logger->new(
-            (($self->{logger} && $self->{logger}->{admin} && $self->{logger}->{admin}->{label}) || 'WhadaWebAdmin'),
-            (($self->{logger} && $self->{logger}->{admin} && $self->{logger}->{admin}->{path}) || '/tmp/whada.admin.log')),
+            (($self->{logger} && $self->{logger}->{webauth} && $self->{logger}->{webauth}->{label}) || 'WhadaWebAuth'),
+            (($self->{logger} && $self->{logger}->{webauth} && $self->{logger}->{webauth}->{path}) || '/tmp/whada.webauth.log')),
     );
 }
 
