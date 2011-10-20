@@ -176,7 +176,7 @@ post '/login' => [qw/check_authenticated/] => sub {
         my @params = $self->config->engine_params($username, $password, 'WHADA');
         $entry = Whada::Engine->authenticate(@params);
     } catch {
-        print STDERR "perl backend search failed with error: $_\n";
+        print STDERR "Whada::Engine authenticate failed with error: $_\n";
         $entry = undef;
     };
 
