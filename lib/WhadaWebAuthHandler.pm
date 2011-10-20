@@ -138,7 +138,7 @@ sub openid_server {
     my $hostname = $config_openid->{hostname};
     my $secret_salt = $config_openid->{server_secret_salt} || (sub {use Sys::Hostname qw//; Sys::Hostname::hostname();})->();
 
-    my $privilege = ($c->req->path =~ m!/openid/([+a-zA-Z]+)/(setup|auth)!)[1];
+    my $privilege = ($c->req->path =~ m!^/openid/([+a-zA-Z]+)/(setup|auth|u/)!)[1];
     unless ($privilege) {
         warnf "unknown path for openid_server: " . $c->req->path;
         return undef;
@@ -149,7 +149,7 @@ sub openid_server {
         post_args    => $env,
         get_user     => sub { $username; },
         get_identity => sub { "http://$hostname/openid/$privilege/auth"; },
-        is_identity  => sub { my ($u,$url)=@_; $u and $url eq "http://$hostname/openid/$privilege/$username/$u"; },
+        is_identity  => sub { my ($u,$url)=@_; $u and $url eq "http://$hostname/openid/$privilege/u/$u"; },
         is_trusted   => sub {
             my ($u, $trust_root, $is_identity) = @_;
             return 0 unless $u and $is_identity;
@@ -212,7 +212,7 @@ get '/openid/:priv/auth' => [qw/check_authenticated/] => sub {
     }
 };
 
-get '/openid/:priv/user/:username' => sub {
+get '/openid/:priv/u/:username' => sub {
     my ($self, $c) = @_;
     #TODO check if this handler is requested or not in openid auth workflow
     my $server = $self->openid_server($c);
