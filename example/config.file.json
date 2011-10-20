@@ -12,5 +12,11 @@
     "type":"DB",
     "host":"localhost",
     "username":"root"
+  },
+  "webauth":{
+    "openid":{
+      "hostname":"master01.auth.tools.xen.livedoor",
+      "server_secret_salt":"ji12017f23q32R#q%"      
+    }
   }
 }
