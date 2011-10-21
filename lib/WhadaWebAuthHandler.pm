@@ -113,7 +113,6 @@ filter 'require_authenticated' => sub {
         $c->stash->{session} = $session;
         $c->stash->{username} = $session->get('username');
         $c->stash->{whada_privs} = decode_json($session->get('whada_privs') || '{}');
-        $c->stash->{is_admin} = $session->get('is_admin') || $session->get('is_partial_admin');
         $session->response_filter($c->res);
         $app->($self, $c);
     }
@@ -179,9 +178,22 @@ sub openid_server {
     return Net::OpenID::Server->new(
         get_args     => $env,
         post_args    => $env,
-        get_user     => sub { $username; },
-        get_identity => sub { "http://$hostname/openid/$privilege/auth"; },
-        is_identity  => sub { my ($u,$url)=@_; $u and $url eq "http://$hostname/openid/$privilege/u/$u"; },
+        get_user     => sub {
+            warn "ON get_user";
+            warn Dumper [@_, $username];
+            $username;
+        },
+        get_identity => sub {
+            warn "ON get_identity";
+            warn Dumper [@_];
+            "http://$hostname/openid/$privilege/auth";
+        },
+        is_identity  => sub {
+            my ($u,$url)=@_;
+            warn "ON is_identity";
+            warn Dumper [@_, $hostname, $privilege];
+            $u and $url eq "http://$hostname/openid/$privilege/u/$u";
+        },
         is_trusted   => sub {
             my ($u, $trust_root, $is_identity) = @_;
             return 0 unless $u and $is_identity;
@@ -301,7 +313,7 @@ get '/openid/:priv/auth' => [qw/check_authenticated/] => sub {
     # ELSE: -> check privilege and redirect redirect_to
 
     #TODO what uri handler i should call openid_server->handle() ?
-#     warn Dumper $c->req->query_parameters;
+    warn Dumper $c->req->query_parameters;
 # $VAR1 = bless( {
 #                  'openid.sreg.required' => 'nickname,email',
 #                  'openid.ns.sreg' => 'http://openid.net/extensions/sreg/1.1',
