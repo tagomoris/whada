@@ -64,6 +64,7 @@ if ($cmd eq '-i') {
         ->execute('global_default_privilege', $global_default_privilege, $global_default_privilege);
     Whada::PrivStore->set_priv_type('WHADA', 'default_deny');
     Whada::PrivStore->set_priv_type('WHADA+ADMIN', 'default_deny');
+    Whada::PrivStore->set_priv_type('WHADA+LOGINONLY', 'default_allow');
     exit(0);
 }
 
