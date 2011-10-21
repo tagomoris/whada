@@ -165,6 +165,8 @@ sub openid_server {
     my $config_openid = $self->config->{webauth}->{openid};
     use CGI::PSGI;
     my $cgi = {%{CGI::PSGI->new($c->req->env)}};
+    my $unfixed_param = $cgi->{param};
+    $cgi->{param} = {map {($_, $unfixed_param->{$_}->[0])} keys(%$unfixed_param)};
     warn Dumper $cgi;
     my $username = $c->stash->{username};
     my $hostname = $config_openid->{hostname};
