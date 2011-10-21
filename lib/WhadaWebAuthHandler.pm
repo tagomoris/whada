@@ -165,6 +165,7 @@ sub openid_server {
     my $config_openid = $self->config->{webauth}->{openid};
     use CGI::PSGI;
     my $cgi = {%{CGI::PSGI->new($c->req->env)}};
+    warn Dumper $cgi;
     my $username = $c->stash->{username};
     my $hostname = $config_openid->{hostname};
     my $secret_salt = $config_openid->{server_secret_salt} || (sub {use Sys::Hostname qw//; Sys::Hostname::hostname();})->();
