@@ -290,9 +290,10 @@ get '/openid/:priv/auth' => [qw/check_authenticated/] => sub {
     my $server = $self->openid_server($c);
     my ($type, $data) = $server->handle_page;
     if ($type eq "redirect") {
-        my $nickname = $c->stash->{username};
-        my $email = $nickname . '@tagomor.is';
-        $c->redirect($data . URI::Escape::uri_escape('&required=' . $c->req->query_parameters->{'openid.sreg.required'} . '&sreg.nickname=' . $nickname . '&sreg.email=' . $email));
+        # my $nickname = $c->stash->{username};
+        # my $email = $nickname . '@tagomor.is';
+        # $c->redirect($data . URI::Escape::uri_escape('&required=' . $c->req->query_parameters->{'openid.sreg.required'} . '&sreg.nickname=' . $nickname . '&sreg.email=' . $email));
+        $c->redirect($data);
     } elsif ($type eq "setup") {
         # for non-authorized user request
         my %setup_opts = %$data;
