@@ -184,9 +184,9 @@ sub openid_server {
     warn Dumper {get => $getparams, post => $postparams};
     return Net::OpenID::Server->new(
         # get_args     => $cgi,
-        get_args => $getparams,
+        get_args => {%{$getparams}},
         # post_args    => $cgi,
-        post_args => $postparams,
+        post_args => {%{$postparams}},
         get_user     => sub {
             warn "ON get_user";
             warn Dumper [@_, $username];
