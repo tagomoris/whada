@@ -163,11 +163,11 @@ sub openid_server {
         return undef;
     }
     my $config_openid = $self->config->{webauth}->{openid};
-    use CGI::PSGI;
-    my $cgi = {%{CGI::PSGI->new($c->req->env)}};
-    my $unfixed_param = $cgi->{param};
-    $cgi->{param} = {map {($_, $unfixed_param->{$_}->[0])} keys(%$unfixed_param)};
-    warn Dumper $cgi;
+    # use CGI::PSGI;
+    # my $cgi = {%{CGI::PSGI->new($c->req->env)}};
+    # my $unfixed_param = $cgi->{param};
+    # $cgi->{param} = {map {($_, $unfixed_param->{$_}->[0])} keys(%$unfixed_param)};
+    # warn Dumper $cgi;
     my $username = $c->stash->{username};
     my $hostname = $config_openid->{hostname};
     my $secret_salt = $config_openid->{server_secret_salt} || (sub {use Sys::Hostname qw//; Sys::Hostname::hostname();})->();
@@ -179,9 +179,14 @@ sub openid_server {
     }
     my $privilege = $openid_args->{privilege};
 
+    my $getparams = $c->req->query_parameters;
+    my $postparams = $c->req->body_parameters;
+    warn Dumper {get => $getparams, post => $postparams};
     return Net::OpenID::Server->new(
-        get_args     => $cgi,
-        post_args    => $cgi,
+        # get_args     => $cgi,
+        get_args => $getparams,
+        # post_args    => $cgi,
+        post_args => $postparams,
         get_user     => sub {
             warn "ON get_user";
             warn Dumper [@_, $username];
@@ -333,7 +338,7 @@ get '/openid/:priv/auth' => [qw/check_authenticated/] => sub {
 #                }, 'Hash::MultiValue' );
 
     my $server = $self->openid_server($c);
-    warn Dumper {"openid.mode" => $server->args('openid.mode')};
+#    warn Dumper {"openid.mode" => $server->args('openid.mode')};
     my ($type, $data) = $server->handle_page;
     warn Dumper {type => $type, data => $data};
     if ($type eq "redirect") {
