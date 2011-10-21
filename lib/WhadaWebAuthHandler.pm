@@ -292,7 +292,7 @@ get '/openid/:priv/auth' => [qw/check_authenticated/] => sub {
     if ($type eq "redirect") {
         my $nickname = $c->stash->{username};
         my $email = $nickname . '@tagomor.is';
-        $c->redirect($data . URI::Escape::uri_escape('&openid.sreg.nickname=' . $nickname . '&openid.sreg.email=' . $email));
+        $c->redirect($data . '&openid.sreg.nickname=' . URI::Escape::uri_escape($nickname) . '&openid.sreg.email=' . URI::Escape::uri_escape($email));
         # $c->redirect($data);
     } elsif ($type eq "setup") {
         # for non-authorized user request
