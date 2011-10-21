@@ -281,46 +281,19 @@ EOXRDS
     $c->res;
 };
 
-# get '/openid/:priv/setup' => sub {
-#     my ($self, $c) = @_;
-#     unless ($self->config->{webauth} && $self->config->{webauth}->{openid}) {
-#         $c->halt(404);
-#     }
-#     my $server = $self->openid_server($c);
-#     my ($type, $data) = $server->handle_page;
-#     if ($type eq "redirect") {
-#         $c->redirect($data);
-#     } elsif ($type eq "setup") {
-#         my %setup_opts = %$data;
-#         # ... show them setup page(s), with options from setup_map
-#         # it's then your job to redirect them at the end to "return_to"
-#         # (or whatever you've named it in setup_map)
-#         warnf "setup with:" . ddf($data);
-#         $c->halt('debugging!');
-#     } else {
-#         $c->res->status(200);
-#         $c->res->content_type($type);
-#         $c->res->body($data);
-#         $c->res;
-#     }
-# };
-
 get '/openid/:priv/auth' => [qw/check_authenticated/] => sub {
     my ($self, $c) = @_;
     unless ($self->config->{webauth} && $self->config->{webauth}->{openid}) {
         $c->halt(404);
     }
-    # check logged in or not
-    # NOT: -> set redirect_to to session, and show login page (to POST /login)
-    # ELSE: -> check privilege and redirect redirect_to
-
-    warn Dumper $c->req->query_parameters;
     my $server = $self->openid_server($c);
     my ($type, $data) = $server->handle_page;
-    warn Dumper {type => $type, data => $data};
     if ($type eq "redirect") {
-        $c->redirect($data);
+        my $nickname = $c->stash->{username};
+        my $email = $nickname . '@tagomor.is';
+        $c->redirect($data . '&sreg.nickname=' . $nickname . '&sreg.email=' . $email);
     } elsif ($type eq "setup") {
+        # for non-authorized user request
         my %setup_opts = %$data;
           # 'data' => {
           #             'ns' => 'http://specs.openid.net/auth/2.0',
@@ -331,9 +304,7 @@ get '/openid/:priv/auth' => [qw/check_authenticated/] => sub {
           #             'trust_root' => 'http://ld-git.data-hotel.net/'
           #           },
           # 'type' => 'setup'
-        # ... show them setup page(s), with options from setup_map
-        # it's then your job to redirect them at the end to "return_to"
-        # (or whatever you've named it in setup_map)
+        #TODO gogogo
         warnf "setup with:" . ddf($data);
         $c->halt('debugging!');
     } else {
@@ -354,12 +325,9 @@ post '/openid/:priv/auth' => sub {
     if ($type eq "redirect") {
         $c->redirect($data);
     } elsif ($type eq "setup") {
-        my %setup_opts = %$data;
-        # ... show them setup page(s), with options from setup_map
-        # it's then your job to redirect them at the end to "return_to"
-        # (or whatever you've named it in setup_map)
+        warnf "POST request of auth is not for setup mode....";
         warnf "setup with:" . ddf($data);
-        $c->halt('debugging!');
+        $c->halt(401);
     } else {
         $c->res->status(200);
         $c->res->content_type($type);
@@ -397,7 +365,7 @@ get '/openid/:priv/u/:username' => [qw/check_authenticated add_openid_headers/] 
     })
 };
 
-post '/login' => [qw/check_authenticated/] => sub {
+post '/login' => sub {
     my ($self, $c) = @_;
     my $username = $c->req->param('username');
     my $password = $c->req->param('password');
