@@ -333,6 +333,7 @@ get '/openid/:priv/auth' => [qw/check_authenticated/] => sub {
 #                }, 'Hash::MultiValue' );
 
     my $server = $self->openid_server($c);
+    warn Dumper {"openid.mode" => $server->args('openid.mode')};
     my ($type, $data) = $server->handle_page;
     warn Dumper {type => $type, data => $data};
     if ($type eq "redirect") {
