@@ -301,10 +301,24 @@ get '/openid/:priv/auth' => [qw/check_authenticated/] => sub {
     # ELSE: -> check privilege and redirect redirect_to
 
     #TODO what uri handler i should call openid_server->handle() ?
-    warn Dumper $c->req->query_parameters;
+#     warn Dumper $c->req->query_parameters;
+# $VAR1 = bless( {
+#                  'openid.sreg.required' => 'nickname,email',
+#                  'openid.ns.sreg' => 'http://openid.net/extensions/sreg/1.1',
+#                  'openid.ns.ax' => 'http://openid.net/srv/ax/1.0',
+#                  'openid.mode' => 'checkid_setup',
+#                  'openid.claimed_id' => 'http://specs.openid.net/auth/2.0/identifier_select',
+#                  'openid.ns' => 'http://specs.openid.net/auth/2.0',
+#                  'openid.identity' => 'http://specs.openid.net/auth/2.0/identifier_select',
+#                  'openid.ax.mode' => 'fetch_request',
+#                  'openid.realm' => 'http://ld-git.data-hotel.net/',
+#                  'openid.return_to' => 'http://ld-git.data-hotel.net/sessions?_method=post&open_id_complete=1',
+#                  'openid.sreg.optional' => 'fullname'
+#                }, 'Hash::MultiValue' );
 
     my $server = $self->openid_server($c);
     my ($type, $data) = $server->handle_page;
+    warn Dumper {type => $type, data => $data};
     if ($type eq "redirect") {
         $c->redirect($data);
     } elsif ($type eq "setup") {
