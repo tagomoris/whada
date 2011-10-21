@@ -191,7 +191,8 @@ sub openid_server {
         server_secret => sub {
             Digest::SHA::sha1_hex($secret_salt . (time / (86400 * 3 + length($secret_salt))));
         },
-        setup_url    => "http://$hostname/openid/$privilege/setup",
+        # setup_url    => "http://$hostname/openid/$privilege/setup",
+        setup_url    => "http://$hostname/openid/$privilege/auth",
         endpoint_url => "http://$hostname/openid/$privilege/auth",
     );
 }
@@ -266,11 +267,40 @@ EOXRDS
     $c->res;
 };
 
-get '/openid/:priv/setup' => sub {
+# get '/openid/:priv/setup' => sub {
+#     my ($self, $c) = @_;
+#     unless ($self->config->{webauth} && $self->config->{webauth}->{openid}) {
+#         $c->halt(404);
+#     }
+#     my $server = $self->openid_server($c);
+#     my ($type, $data) = $server->handle_page;
+#     if ($type eq "redirect") {
+#         $c->redirect($data);
+#     } elsif ($type eq "setup") {
+#         my %setup_opts = %$data;
+#         # ... show them setup page(s), with options from setup_map
+#         # it's then your job to redirect them at the end to "return_to"
+#         # (or whatever you've named it in setup_map)
+#         warnf "setup with:" . ddf($data);
+#         $c->halt('debugging!');
+#     } else {
+#         $c->res->status(200);
+#         $c->res->content_type($type);
+#         $c->res->body($data);
+#         $c->res;
+#     }
+# };
+
+get '/openid/:priv/auth' => [qw/check_authenticated/] => sub {
     my ($self, $c) = @_;
     unless ($self->config->{webauth} && $self->config->{webauth}->{openid}) {
         $c->halt(404);
     }
+    # check logged in or not
+    # NOT: -> set redirect_to to session, and show login page (to POST /login)
+    # ELSE: -> check privilege and redirect redirect_to
+
+    #TODO what uri handler i should call openid_server->handle() ?
     my $server = $self->openid_server($c);
     my ($type, $data) = $server->handle_page;
     if ($type eq "redirect") {
@@ -290,16 +320,11 @@ get '/openid/:priv/setup' => sub {
     }
 };
 
-get '/openid/:priv/auth' => [qw/check_authenticated/] => sub {
+post '/openid/:priv/auth' => sub {
     my ($self, $c) = @_;
     unless ($self->config->{webauth} && $self->config->{webauth}->{openid}) {
         $c->halt(404);
     }
-    # check logged in or not
-    # NOT: -> set redirect_to to session, and show login page (to POST /login)
-    # ELSE: -> check privilege and redirect redirect_to
-
-    #TODO what uri handler i should call openid_server->handle() ?
     my $server = $self->openid_server($c);
     my ($type, $data) = $server->handle_page;
     if ($type eq "redirect") {
