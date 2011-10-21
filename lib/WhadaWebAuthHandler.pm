@@ -186,7 +186,7 @@ sub openid_server {
             my ($u, $trust_root, $is_identity) = @_;
             return 0 unless $u and $is_identity;
             #TODO implement later.
-            return 0;
+            return $is_identity;
         },
         server_secret => sub {
             Digest::SHA::sha1_hex($secret_salt . (time / (86400 * 3 + length($secret_salt))));
@@ -301,6 +301,8 @@ get '/openid/:priv/auth' => [qw/check_authenticated/] => sub {
     # ELSE: -> check privilege and redirect redirect_to
 
     #TODO what uri handler i should call openid_server->handle() ?
+    warn Dumper $c->req->query_parameters;
+
     my $server = $self->openid_server($c);
     my ($type, $data) = $server->handle_page;
     if ($type eq "redirect") {
