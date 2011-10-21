@@ -168,7 +168,8 @@ sub openid_server {
     warn Dumper $env;
     warn "CGI::PSGI:";
     use CGI::PSGI;
-    warn Dumper CGI::PSGI->new($env);
+    my $cgi = CGI::PSGI->new($env);
+    warn Dumper $cgi;
     my $username = $c->stash->{username};
     my $hostname = $config_openid->{hostname};
     my $secret_salt = $config_openid->{server_secret_salt} || (sub {use Sys::Hostname qw//; Sys::Hostname::hostname();})->();
@@ -181,8 +182,8 @@ sub openid_server {
     my $privilege = $openid_args->{privilege};
 
     return Net::OpenID::Server->new(
-        get_args     => $env,
-        post_args    => $env,
+        get_args     => $cgi,
+        post_args    => $cgi,
         get_user     => sub {
             warn "ON get_user";
             warn Dumper [@_, $username];
