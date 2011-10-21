@@ -24,6 +24,7 @@ use Whada::PrivStore;
 use Whada::Credential;
 
 use Net::OpenID::Server;
+use Digest::SHA qw//;
 
 # for debug...
 use Data::Dumper;
@@ -187,14 +188,28 @@ sub openid_server {
             #TODO implement later.
             return 0;
         },
+        server_secret => sub {
+            Digest::SHA::sha1_hex($secret_salt . (time / (86400 * 3 + length($secret_salt))));
+        },
         setup_url    => "http://$hostname/openid/$privilege/setup",
         endpoint_url => "http://$hostname/openid/$privilege/auth",
     );
 }
 
-get '/' => [qw/check_authenticated/] => sub {
+get '/' => sub {
     my ($self, $c) = @_;
-    #TODO login form or none
+    $c->halt(404);
+};
+
+get '/openid/:priv' => [qw/check_authenticated add_openid_headers/] => sub {
+    my ($self, $c) = @_;
+    unless ($self->config->{webauth} && $self->config->{webauth}->{openid}) {
+        $c->halt(404);
+    }
+    $c->render('auth_top.tx', {
+        protocol => 'OpenID',
+        privilege => $c->args->{priv},
+    });
 };
 
 get '/openid/:priv/signon.xrds' => sub {
@@ -253,6 +268,9 @@ EOXRDS
 
 get '/openid/:priv/setup' => sub {
     my ($self, $c) = @_;
+    unless ($self->config->{webauth} && $self->config->{webauth}->{openid}) {
+        $c->halt(404);
+    }
     my $server = $self->openid_server($c);
     my ($type, $data) = $server->handle_page;
     if ($type eq "redirect") {
@@ -274,8 +292,12 @@ get '/openid/:priv/setup' => sub {
 
 get '/openid/:priv/auth' => [qw/check_authenticated/] => sub {
     my ($self, $c) = @_;
-    # if not logged in yet, store redirect url to session, and show login page.
-    # if logged in already, redirect directly.
+    unless ($self->config->{webauth} && $self->config->{webauth}->{openid}) {
+        $c->halt(404);
+    }
+    # check logged in or not
+    # NOT: -> set redirect_to to session, and show login page (to POST /login)
+    # ELSE: -> check privilege and redirect redirect_to
 
     #TODO what uri handler i should call openid_server->handle() ?
     my $server = $self->openid_server($c);
@@ -299,6 +321,9 @@ get '/openid/:priv/auth' => [qw/check_authenticated/] => sub {
 
 get '/openid/:priv/u/:username' => [qw/check_authenticated add_openid_headers/] => sub {
     my ($self, $c) = @_;
+    unless ($self->config->{webauth} && $self->config->{webauth}->{openid}) {
+        $c->halt(404);
+    }
     my $openid_args = openid_parse_path($c->req->path);
     my $hostname = $self->config->{webauth}->{openid}->{hostname};
 
@@ -330,7 +355,7 @@ post '/login' => [qw/check_authenticated/] => sub {
     my $session = $c->stash->{session};
     my $entry;
     try {
-        my @params = $self->config->engine_params($username, $password, 'WHADA');
+        my @params = $self->config->engine_params($username, $password, 'WHADA+LOGINONLY');
         $entry = Whada::Engine->authenticate(@params);
     } catch {
         print STDERR "authentication failed with error: $_\n";
@@ -339,26 +364,23 @@ post '/login' => [qw/check_authenticated/] => sub {
 
     if ($entry) {
         $session->set('logged_in', 1);
-        my $cred = Whada::Credential->new({username => $username, privilege => 'WHADA+ADMIN'});
+        my $cred = Whada::Credential->new({username => $username});
         my $privs = Whada::PrivStore->privileges($cred);
-        my $is_admin = Whada::PrivStore->check($cred);
         $session->set('whada_privs', encode_json($privs));
         $session->set('username', $username);
-        $session->set('is_admin', $is_admin);
-        $session->set('is_partial_admin', scalar(grep {$_ =~ /^WHADA\+ADMIN\+.+$/} keys(%$privs)) > 0);
     }
     else {
         $session->set('logged_in', 0);
         $session->set('notification', 'check your password or WHADA privilege...');
     }
-    $c->redirect('/');
+    $c->redirect($c->req->referer || '/');
 };
 
 get '/logout' => [qw/check_authenticated/] => sub {
     my ($self, $c) = @_;
     my $session = $c->stash->{session};
     $session->expire();
-    $c->redirect('/');
+    $c->redirect($c->req->referer || '/');
 };
 
 1;
