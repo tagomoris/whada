@@ -31,6 +31,7 @@ requires 'Net::LDAP';
 requires 'Net::LDAP::Filter';
 requires 'Net::OpenID::Server';
 requires 'Math::BigInt::GMP';
+requires 'CGI::PSGI';
 
 tests 't/*.t';
 test_requires 'Test::More';

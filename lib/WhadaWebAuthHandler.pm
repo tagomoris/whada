@@ -166,6 +166,9 @@ sub openid_server {
     my $env = $c->req->env;
     warn "WITH env:";
     warn Dumper $env;
+    warn "CGI::PSGI:";
+    use CGI::PSGI;
+    warn Dumper CGI::PSGI->new($env);
     my $username = $c->stash->{username};
     my $hostname = $config_openid->{hostname};
     my $secret_salt = $config_openid->{server_secret_salt} || (sub {use Sys::Hostname qw//; Sys::Hostname::hostname();})->();
