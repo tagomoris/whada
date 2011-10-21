@@ -291,7 +291,7 @@ get '/openid/:priv/auth' => [qw/check_authenticated/] => sub {
     if ($type eq "redirect") {
         my $nickname = $c->stash->{username};
         my $email = $nickname . '@tagomor.is';
-        $c->redirect($data . '&sreg.nickname=' . $nickname . '&sreg.email=' . $email);
+        $c->redirect($data . '&required=' . $c->req->query_parameters->{'openid.sreg.required'} . '&sreg.nickname=' . $nickname . '&sreg.email=' . $email);
     } elsif ($type eq "setup") {
         # for non-authorized user request
         my %setup_opts = %$data;
