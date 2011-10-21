@@ -167,10 +167,8 @@ sub openid_server {
     warn "WITH env:";
     warn Dumper $env;
     warn "CGI::PSGI:";
-    # use CGI::PSGI;
-    # my $cgi = CGI::PSGI->new($env);
-    use CGI;
-    my $cgi = CGI->new();
+    use CGI::PSGI;
+    my $cgi = {%{CGI::PSGI->new($env)}};
     warn Dumper $cgi;
     my $username = $c->stash->{username};
     my $hostname = $config_openid->{hostname};
