@@ -354,7 +354,7 @@ get '/check' => [qw/require_authenticated/] => sub {
     my ($self, $c) = @_;
     my $username = $c->req->parameters->{username};
     my $privilege = $c->req->parameters->{privilege};
-    if (Whada::PrivStore->check(Whada::Credential->new({usename => $username, privilege => $privilege}))) {
+    if (Whada::PrivStore->check(Whada::Credential->new({username => $username, privilege => $privilege}))) {
         $c->render_json({result => "Access allowed: $username -> $privilege"});
     }
     else {
