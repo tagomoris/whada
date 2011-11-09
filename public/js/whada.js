@@ -124,7 +124,7 @@ function insert_privilege_into_list(priv, target){
 };
 
 function load_privileges_list(){
-  $.get('/privs', function(data){
+  $.get('/privs?' + (new Date()).getTime(), function(data){
     data.forEach(function(item){
       insert_privilege_into_list(item, '#privileges-list');
     });
@@ -133,7 +133,7 @@ function load_privileges_list(){
 };
 
 function load_privileges_admin_list(){
-  $.get('/admin_privs', function(data){
+  $.get('/admin_privs?' + (new Date()).getTime(), function(data){
     data.forEach(function(item){
       insert_privilege_into_list(item, '#privileges-admin-list');
     });
@@ -161,7 +161,7 @@ function insert_user_into_list(user, target){
 };
 
 function load_users_list(){
-  $.get('/users', function(data){
+  $.get('/users?' + (new Date()).getTime(), function(data){
     data.forEach(function(item){
       insert_user_into_list(item, '#users-list');
     });
@@ -176,7 +176,7 @@ function checker_execute(){
     show_dialog('Error', 'blank username or password', {"OK":function(){$('#dialog').dialog('close');}});
     return;
   }
-  $.get('/check', {username:username, privilege:privilege}, function(data){
+  $.get('/check?' + (new Date()).getTime(), {username:username, privilege:privilege}, function(data){
     show_dialog('Checker result', data['result'], {"OK":function(){$('#dialog').dialog('close');}});
   });
 };
