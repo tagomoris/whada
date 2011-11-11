@@ -100,10 +100,12 @@ sub search {
 
     # $filterStr: (&(objectClass=*)(uid=tagomoris)), (&(objectClass=*)(MAIL=tagomoris@livedoor.jp))
     my $entry;
+    my $credential;
     try {
         my $config = $this->configurations;
+        $credential = ($this->{converter})->new({ldapquery => {base => $base, filter => $filterStr}})->credential()
         $entry = Whada::Engine->authorize(
-            credential => ($this->{converter})->new({ldapquery => {base => $base, filter => $filterStr}})->credential(),
+            credential => $credential,
             dictionary => ($this->{dictionary})->new($this->{converter}, $config),
             logger => Whada::Logger->new('slapd', $config->{logpath}),
         );
@@ -113,7 +115,13 @@ sub search {
     };
     return (0) unless defined $entry;
     my $pairs = join("\n", map {attribute_dump($_, $entry->get_value($_))} $entry->attributes());
-    my $entryString = "dn: " . $entry->dn() . "\n" . $pairs . "\n";
+    my @additionals = (
+        "dn: " . $entry->dn(),
+        "uid: " . $credential->username,
+        "account: " . $credential->username,
+        "username: " . $credential->username,
+    );
+    my $entryString = join("\n", @additionals) . "\n" . $pairs . "\n";
     return (0, $entryString);
 }
 
