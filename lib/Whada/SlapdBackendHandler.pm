@@ -103,7 +103,7 @@ sub search {
     my $credential;
     try {
         my $config = $this->configurations;
-        $credential = ($this->{converter})->new({ldapquery => {base => $base, filter => $filterStr}})->credential()
+        $credential = ($this->{converter})->new({ldapquery => {base => $base, filter => $filterStr}})->credential();
         $entry = Whada::Engine->authorize(
             credential => $credential,
             dictionary => ($this->{dictionary})->new($this->{converter}, $config),
