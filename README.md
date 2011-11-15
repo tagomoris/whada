@@ -1,4 +1,4 @@
-# shib
+# whada 
 
 * http://github.com/tagomoris/whada
 
