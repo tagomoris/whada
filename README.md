@@ -35,6 +35,8 @@ For future:
 
 Whada requires modern perl, and doesn't works well with 5.8.x. So your system perl's version is 5.8.x, you should install recent version like 5.14.x as system perl (or perlbrew perl of root user).
 
+**For slapd with perlbrew, you MUST install perlbrew (and its perl-5.14.x) before installation of slapd.**
+
 ### OpenLDAP Server
 
 If your system's openldap package doesn't support perl-backend, you must build openldap from source with perl-backend.
