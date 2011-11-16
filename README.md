@@ -83,7 +83,7 @@ You can install mysqld in same host, or other network reachable host.
 * Install CPAN modules
     * For system perl (or root users perlbrew environment perl)
     * cpanm strongly recommended
-    * For cpanm, see http://search.cpan.org/dist/App-cpanminus/
+    * For cpanm, see http://search.cpan.org/dist/App-cpanminus/ (or 'perlbrew install-cpanm' with perlbrew)
     * slapd cannot use extlib
 
 Install CPAN modules, do commands below.
