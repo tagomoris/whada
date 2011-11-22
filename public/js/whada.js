@@ -56,12 +56,13 @@ function re_assign_events() {
   $('div.username,div.privilege')
     .die('click')
     .live('click', function() {
+      var action = ($(this).siblings('ul').css('display') === 'none' ? 'dropdown' : 'rollup');
       $(this).siblings('ul').slideToggle(80);
       if ($(this).hasClass('username')) {
         var username = $(this).text();
         $('#checker_username').val(username);
         if (whada_logged_in_as_admin) {
-          $('#operator_user').text(username);
+          set_priv_operator('username', action, {username:username});
           $('#drop_user_name').val(username);
         }
       }
@@ -69,7 +70,7 @@ function re_assign_events() {
         var privname = $(this).text();
         $('#checker_privilege').val(privname);
         if (whada_logged_in_as_admin) {
-          $('#operator_priv').text(privname);
+          set_priv_operator('privilege', action, {privilege:privname});
           $('#drop_priv_name').val(privname);
         }
       }
@@ -85,14 +86,54 @@ function re_assign_events() {
           $('.control #operator').slideDown(50);
           var username = $(this).closest('.items').siblings('.username').text();
           var parts = $(this).text().split(':');
-          $('#operator_user').text(username);
-          $('#operator_priv').text(parts[0]);
-          $('#operator_status').text(parts[1]);
+          set_priv_operator('full', 'full', {username:username, privilege:parts[0], status:parts[1]});
           $('#checker_username').val(username);
           $('#checker_privilege').val(parts[0]);
         });
       return false;
     });
+};
+
+function set_priv_operator(datatype, action, set){
+  if (action === 'full') {
+    $('#operator_user').text(set.username);
+    $('#operator_priv').text(set.privilege);
+    $('#operator_status').text(set.status);
+    return;
+  }
+  if (action === 'rollup') {
+    if (datatype === 'username') {
+      $('#operator_user,#operator_priv,#operator_status').text('');
+    } else { /* privilege */
+      $('#operator_priv,#operator_status').text('');
+    }
+    return;
+  }
+  /* dropdown */
+  if (datatype === 'username') {
+    $('#operator_user').text(set.username);
+    var priv = $('#operator_priv').text();
+    if (priv.length < 1)
+      return;
+    var userdata = user_data_cached(set.username);
+    if (userdata && userdata[priv]) {
+      $('#operator_status').text(userdata[priv]);
+    }else{
+      $('#operator_status').text('');
+    }
+    return;
+  }
+  /* dropdown && privilege */
+  $('#operator_priv').text(set.privilege);
+  var username = $('#operator_user').text();
+  if (username.length < 1)
+    return;
+  var userdata2 = user_data_cached(username);
+  if (userdata2 && userdata2[set.privilege]) {
+    $('#operator_status').text(userdata2[set.privilege]);
+  }else{
+    $('#operator_status').text('');
+  }
 };
 
 function show_dialog(title, message, buttons){
@@ -146,7 +187,7 @@ $.template("userItemTemplate",
            '  <div class="username" style="font-size: large; font-weight: bold;">${UserName}</div>' +
            '  <ul class="items ui-widget ui-helper-clearfix">' +
            '    {{each Privileges}}' +
-           '    <li class="operation_item ui-state-default ui-corner-all">${$value}</li>' +
+           '    <li class="operation_item ui-state-default ui-corner-all">${$value.text}</li>' +
            '    {{/each}}' +
            '  </ul>' +
            '</li>');
@@ -156,17 +197,26 @@ function insert_user_into_list(user, target){
   for (var name in user.privileges) {
     privs.push(name);
   }
-  $.tmpl("userItemTemplate", [{UserName:user.username, Privileges:privs.sort().map(function(p){return p + ':' + user.privileges[p];})}])
-    .appendTo(target);
+  $.tmpl("userItemTemplate", [{
+    UserName:user.username,
+    Privileges:privs.sort().map(function(p){return {name: p, status: user.privileges[p], text: p + ':' + user.privileges[p]};})
+  }]).appendTo(target);
 };
 
+var users_data = {};
 function load_users_list(){
+  users_data = {};
   $.get('/users?' + (new Date()).getTime(), function(data){
     data.forEach(function(item){
+      users_data[item.username] = item.privileges;
       insert_user_into_list(item, '#users-list');
     });
     re_assign_events();
   });
+};
+
+function user_data_cached(username){
+  return users_data[username];
 };
 
 function checker_execute(){
