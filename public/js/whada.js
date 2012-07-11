@@ -59,7 +59,7 @@ function re_assign_events() {
       var action = ($(this).siblings('ul').css('display') === 'none' ? 'dropdown' : 'rollup');
       $(this).siblings('ul').slideToggle(80);
       if ($(this).hasClass('username')) {
-        var username = $(this).text();
+        var username = $(this).data('username');
         $('#checker_username').val(username);
         if (whada_logged_in_as_admin) {
           set_priv_operator('username', action, {username:username});
@@ -84,7 +84,7 @@ function re_assign_events() {
         .unbind('click')
         .click(function(){
           $('.control #operator').slideDown(50);
-          var username = $(this).closest('.items').siblings('.username').text();
+          var username = $(this).closest('.items').siblings('.username').data('username');
           var parts = $(this).text().split(':');
           set_priv_operator('full', 'full', {username:username, privilege:parts[0], status:parts[1]});
           $('#checker_username').val(username);
@@ -184,7 +184,8 @@ function load_privileges_admin_list(){
 
 $.template("userItemTemplate",
            '<li style="list-style-type: none;">' +
-           '  <div class="username" style="font-size: large; font-weight: bold;">${UserName}<span class="limited">${Limited}</span></div>' +
+           '  <div class="username" style="font-size: large; font-weight: bold;" data-username="${UserName}">' +
+           '    ${UserName}<span class="limited">${Limited}</span></div>' +
            '  <ul class="items ui-widget ui-helper-clearfix">' +
            '    {{each Privileges}}' +
            '    <li class="operation_item ui-state-default ui-corner-all">${$value.text}</li>' +
