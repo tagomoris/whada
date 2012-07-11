@@ -180,7 +180,7 @@ post '/login' => [qw/check_authenticated/] => sub {
         $entry = undef;
     };
     my $whada_cred = Whada::Credential->new({username => $username, privilege => 'WHADA'});
-    my $is_limited = Whada::PrivStore->limitaiton($whada_cred);
+    my $is_limited = Whada::PrivStore->limitation($whada_cred);
 
     if ($entry and not $is_limited) {
         $session->set('logged_in', 1);
