@@ -179,8 +179,10 @@ post '/login' => [qw/check_authenticated/] => sub {
         print STDERR "Whada::Engine authenticate failed with error: $_\n";
         $entry = undef;
     };
+    my $whada_cred = Whada::Credential->new({username => $username, privilege => 'WHADA'});
+    my $is_limited = Whada::PrivStore->limitaiton($whada_cred);
 
-    if ($entry) {
+    if ($entry and not $is_limited) {
         $session->set('logged_in', 1);
         my $cred = Whada::Credential->new({username => $username, privilege => 'WHADA+ADMIN'});
         my $privs = Whada::PrivStore->privileges($cred);
