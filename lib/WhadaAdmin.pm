@@ -327,6 +327,21 @@ post '/user/update' => [qw/require_authenticated_admin/] => sub {
     $c->render_json({result => JSON::true, message => 'user privilege successfully updated.'});
 };
 
+post '/user/toggle_limit' => [qw/require_authenticated_admin/] => sub {
+    my ($self, $c) = @_;
+    my $target_username = $c->req->parameters->{username};
+    my $target_user_credential = Whada::Credential->new({username => $target_username});
+    my $target = Whada::PrivStore->user_data($target_username);
+    if ($target->{limited}) {
+        $target->{limited} = JSON::true;
+    }
+    else {
+        $target->{limited} = JSON::false;
+    }
+    Whada::PrivStore->save_user_data($target);
+    $c->render_json({result => JSON::true, message => 'user limit status successfully changed.'});
+};
+
 post '/user/create' => [qw/require_authenticated_admin/] => sub {
     my ($self, $c) = @_;
     my $username = $c->req->parameters->{target};

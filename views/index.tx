@@ -87,6 +87,7 @@
       .control #panel {display: none; background-color: skyblue; border: 2px solid blue; margin-bottom: 2em; padding: 0.5em;}
 
       div.username,div.privilege {padding-top: 0.1em; padding-bottom: 0.1em; margin-bottom: 0.1em; cursor: pointer;}
+      div.limited {color: yellow;}
     </style>
   </head>
   <body>
@@ -182,7 +183,7 @@
                   <li>status <span id="operator_status"></span></li>
                 </ul>
                 <div style="font-size: small;">
-                  <p style="font-size: medium;">for user</p>
+                  <p style="font-size: medium;">for user and privilege</p>
                   <a class="operator_button" id="operator_allow" href="#">allow<br />user</a>
                   <a class="operator_button" id="operator_deny" href="#">deny<br />user</a>
                   <a class="operator_button" id="operator_remove" href="#">remove<br />(follow default)</a>
@@ -193,6 +194,11 @@
                   <a class="operator_button" id="operator_default_allow" href="#">default<br />allow</a>
                   <a class="operator_button" id="operator_default_deny" href="#">default<br />deny</a>
                   <a class="operator_button" id="operator_always_deny" href="#">always<br />deny</a>
+                </div>
+                <div style="font-size: small;">
+                  <p style="font-size: medium;">for user</p>
+                  <a class="operator_button" id="operator_limit" href="#">toggle user limitation</a>
+                </div>
               </div>
             </div>
 

@@ -192,6 +192,11 @@ sub set_priv_type {
     $this->save_priv_data($data);
 }
 
+sub limitation {
+    my $this = shift;
+    return ($this->user_data((shift)->username()))->{limited};
+}
+
 sub privileges {
     my $this = shift;
     return ($this->user_data((shift)->username()))->{privileges} || {}
@@ -226,12 +231,19 @@ sub check {
     my $credential = shift;
     my $priv = $credential->privilege;
     my $type = $this->priv_type($priv);
+    my $limit = $this->limitation($credential);
     my $privs = $this->privileges($credential);
 
     unless (defined $type) {
         warnf 'undefined privilege:' . $priv;
         return undef;
     }
+    if ($limit) {
+        return 0 if ($type eq 'always_deny');
+        return 1 if (exists($privs->{$priv}) and $privs->{$priv} eq 'allowed');
+        return 0;
+    }
+
     if ($type eq 'always_allow') {
         return 1;
     }

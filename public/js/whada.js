@@ -184,7 +184,7 @@ function load_privileges_admin_list(){
 
 $.template("userItemTemplate",
            '<li style="list-style-type: none;">' +
-           '  <div class="username" style="font-size: large; font-weight: bold;">${UserName}</div>' +
+           '  <div class="username${Limited}" style="font-size: large; font-weight: bold;">${UserName}</div>' +
            '  <ul class="items ui-widget ui-helper-clearfix">' +
            '    {{each Privileges}}' +
            '    <li class="operation_item ui-state-default ui-corner-all">${$value.text}</li>' +
@@ -199,6 +199,7 @@ function insert_user_into_list(user, target){
   }
   $.tmpl("userItemTemplate", [{
     UserName:user.username,
+    Limited:(user.limited ? 'limited' : ''),
     Privileges:privs.sort().map(function(p){return {name: p, status: user.privileges[p], text: p + ':' + user.privileges[p]};})
   }]).appendTo(target);
 };
@@ -208,7 +209,7 @@ function load_users_list(){
   users_data = {};
   $.get('/users?' + (new Date()).getTime(), function(data){
     data.forEach(function(item){
-      users_data[item.username] = item.privileges;
+      users_data[item.username] = item;
       insert_user_into_list(item, '#users-list');
     });
     re_assign_events();
@@ -216,8 +217,18 @@ function load_users_list(){
 };
 
 function user_data_cached(username){
-  return users_data[username];
+  if (users_data[username]){
+    return users_data[username].privileges;
+  }
+  return null;
 };
+
+function user_type_cached(username){
+  if (users_data[username]){
+    return users_data[username].limited || false;
+  }
+  return null;
+}
 
 function checker_execute(){
   var username = $('#checker_username').val();
@@ -253,6 +264,15 @@ function operator_execute(event){
     }
     path = '/user/update';
     args = {username:username, privilege:priv, operation:operation};
+  }
+  else if (operation === 'limit') {
+    var username2 = $('#operator_user').text();
+    if (username2.length < 1) {
+      show_dialog('Error', 'user not selected', {"OK":function(){$('#dialog').dialog('close');}});
+      return;
+    }
+    path = '/user/toggle_limit';
+    args = {username:username2};
   }
   else {
     show_dialog('Error', 'unknown operation (maybe bug):' + operation, {"OK":function(){$('#dialog').dialog('close');}});
