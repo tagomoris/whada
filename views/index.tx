@@ -87,7 +87,7 @@
       .control #panel {display: none; background-color: skyblue; border: 2px solid blue; margin-bottom: 2em; padding: 0.5em;}
 
       div.username,div.privilege {padding-top: 0.1em; padding-bottom: 0.1em; margin-bottom: 0.1em; cursor: pointer;}
-      div.limited {color: yellow;}
+      span.limited {font-weight: normal; color: #cccc11;}
     </style>
   </head>
   <body>

@@ -184,7 +184,7 @@ function load_privileges_admin_list(){
 
 $.template("userItemTemplate",
            '<li style="list-style-type: none;">' +
-           '  <div class="username${Limited}" style="font-size: large; font-weight: bold;">${UserName}</div>' +
+           '  <div class="username" style="font-size: large; font-weight: bold;">${UserName}<span class="limited">${Limited}</span></div>' +
            '  <ul class="items ui-widget ui-helper-clearfix">' +
            '    {{each Privileges}}' +
            '    <li class="operation_item ui-state-default ui-corner-all">${$value.text}</li>' +
@@ -199,7 +199,7 @@ function insert_user_into_list(user, target){
   }
   $.tmpl("userItemTemplate", [{
     UserName:user.username,
-    Limited:(user.limited ? ' limited' : ''),
+    Limited:(user.limited ? ' (limited)' : ''),
     Privileges:privs.sort().map(function(p){return {name: p, status: user.privileges[p], text: p + ':' + user.privileges[p]};})
   }]).appendTo(target);
 };
