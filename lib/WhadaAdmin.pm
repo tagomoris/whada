@@ -333,10 +333,10 @@ post '/user/toggle_limit' => [qw/require_authenticated_admin/] => sub {
     my $target_user_credential = Whada::Credential->new({username => $target_username});
     my $target = Whada::PrivStore->user_data($target_username);
     if ($target->{limited}) {
-        $target->{limited} = JSON::true;
+        $target->{limited} = JSON::false;
     }
     else {
-        $target->{limited} = JSON::false;
+        $target->{limited} = JSON::true;
     }
     Whada::PrivStore->save_user_data($target);
     $c->render_json({result => JSON::true, message => 'user limit status successfully changed.'});
