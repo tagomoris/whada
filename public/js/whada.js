@@ -246,13 +246,13 @@ function operator_execute(event){
   var matched = /^operator_(.*)$/.exec($(event.target).closest('a').attr('id'));
   var operation = matched[1];
   var priv = $('#operator_priv').text();
-  if (priv.length < 1) {
-    show_dialog('Error', 'privilege not selected', {"OK":function(){$('#dialog').dialog('close');}});
-    return;
-  }
   var path;
   var args;
   if (operation === 'always_allow' || operation === 'default_allow' || operation === 'default_deny' || operation === 'always_deny'){
+    if (priv.length < 1) {
+      show_dialog('Error', 'privilege not selected', {"OK":function(){$('#dialog').dialog('close');}});
+      return;
+    }
     path = '/priv/update';
     args = {privilege:priv, dst_type:operation};
   }
@@ -260,6 +260,10 @@ function operator_execute(event){
     var username = $('#operator_user').text();
     if (username.length < 1) {
       show_dialog('Error', 'user not selected', {"OK":function(){$('#dialog').dialog('close');}});
+      return;
+    }
+    if (priv.length < 1) {
+      show_dialog('Error', 'privilege not selected', {"OK":function(){$('#dialog').dialog('close');}});
       return;
     }
     path = '/user/update';
