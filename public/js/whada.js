@@ -199,7 +199,7 @@ function insert_user_into_list(user, target){
   }
   $.tmpl("userItemTemplate", [{
     UserName:user.username,
-    Limited:(user.limited ? 'limited' : ''),
+    Limited:(user.limited ? ' limited' : ''),
     Privileges:privs.sort().map(function(p){return {name: p, status: user.privileges[p], text: p + ':' + user.privileges[p]};})
   }]).appendTo(target);
 };
