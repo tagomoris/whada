@@ -6,6 +6,11 @@ function load_page() {
   load_privileges_list();
   load_users_list();
 
+  $("a.searcher_username").button();
+  $('a#searcher_username')
+    .unbind()
+    .click(searcher_execute);
+
   $('#checker_bar')
     .unbind()
     .click(function(){
@@ -229,6 +234,16 @@ function user_type_cached(username){
     return users_data[username].limited || false;
   }
   return null;
+}
+
+function searcher_execute(){
+  var username = $('#username_search').val();
+  if (username.length < 1) {
+    show_dialog('Error', 'blank username', {"OK":function(){$('#dialog').dialog('close');}});
+  }
+  $.get('/search?' + (new Date()).getTime(), {username:username}, function(data){
+    show_dialog('Search result', data['result'], {"OK":function(){$('#dialog').dialog('close');}});
+  });
 }
 
 function checker_execute(){

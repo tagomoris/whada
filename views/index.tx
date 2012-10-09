@@ -147,9 +147,10 @@
           </div>
           <div class="span6">
             <!-- secondary content -->
-            <h3>serch</h3>
-            <div style="margin-bottom: 2em;">
-              <input id="isearchBox" type="text" style="border: 1px solid silver;" />
+            <h3>search username</h3>
+            <div style="margin-bottom: 2em;" class="control ui-widget ui-corner-all">
+              <input id="username_search" type="text" style="border: 1px solid silver;" placeholder="search username from backend" />
+              <a class="searcher_username" id="searcher_username" href="#">execute</a>
             </div>
 
             <div class="control ui-widget ui-corner-all">

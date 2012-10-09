@@ -392,4 +392,15 @@ get '/check' => [qw/require_authenticated/] => sub {
     }
 };
 
+get '/search' => [qw/require_authenticated/] => sub {
+    my ($self, $c) = @_;
+    my $username = $c->req->parameters->{username};
+    my @params = $self->config->engine_params($username, '', 'ANY');
+    if (Whada::Engine->search(@params)) {
+        $c->render_json({result => "SUCCESS: User $username FOUND in backend"});
+    } else {
+        $c->render_json({result => "FAIL: User $username NOT FOUND in backend"});
+    }
+};
+
 1;

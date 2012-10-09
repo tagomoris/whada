@@ -40,6 +40,16 @@ sub authenticate {
                  });
 }
 
+# check username exists or not by credential from dictionary
+sub search {
+    shift; # throw package name away
+    my $opts = {@_};
+    my $credential = $opts->{credential};
+    my $dictionary = $opts->{dictionary};
+    return 1 if $dictionary->entry($credential);
+    return undef;
+}
+
 sub drive {
     my ($credential, $logger, $with_authentication, $sub) = @_;
 
