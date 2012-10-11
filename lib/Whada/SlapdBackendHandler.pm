@@ -117,9 +117,6 @@ sub search {
     my $pairs = join("\n", map {attribute_dump($_, $entry->get_value($_))} $entry->attributes());
     my @additionals = (
         "dn: " . $entry->dn(),
-        "uid: " . $credential->username,
-        "account: " . $credential->username,
-        "username: " . $credential->username,
     );
     my $entryString = join("\n", @additionals) . "\n" . $pairs . "\n";
     return (0, $entryString);
