@@ -84,7 +84,7 @@ sub credential_from_ldapquery {
         if ($attr =~ /\Apriv(ilege)?\Z/i) {
             $args->{privilege} = $val;
         }
-        elsif ($attr =~ /\Auid\Z/i or $attr =~ /\Auser(name)?\Z/i or $attr =~ /\AsAMAccountName\Z/i) {
+        elsif ($attr =~ /\Aname\Z/i or $attr =~ /\Auid\Z/i or $attr =~ /\Auser(name)?\Z/i or $attr =~ /\AsAMAccountName\Z/i) {
             $args->{username} = $val;
         }
         elsif ($attr =~ /\Amail(address)?\Z/i) {
