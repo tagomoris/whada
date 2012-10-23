@@ -71,6 +71,10 @@ sub try_admin_priv {
     my ($self, $username, $privilege) = @_;
 
     my @priv_parts = split(/\+/, $privilege);
+    if ($priv_parts[0] eq 'WHADA' and $priv_parts[1] eq 'ADMIN') {
+        # WHADA+ADMIN+HOGE can be fixed by WHADA+ADMIN+HOGE
+        shift @priv_parts; shift @priv_parts;
+    }
     my $check = 0;
     while (scalar(@priv_parts) > 0) {
         my $target_admin_priv = 'WHADA+ADMIN+' . join('+', @priv_parts);
