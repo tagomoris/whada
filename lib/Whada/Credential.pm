@@ -19,6 +19,8 @@ sub new {
         $self->{mail} = $args->{mail};
     }
     if ($args->{privilege}) {
+        # Privilege names MUST be upcased:
+        #  slapd do downcase privilege names, so convert names upcased forcely
         $self->{privilege} = uc $args->{privilege};
     }
     return bless $self, $this;
