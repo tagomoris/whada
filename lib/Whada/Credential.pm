@@ -19,7 +19,7 @@ sub new {
         $self->{mail} = $args->{mail};
     }
     if ($args->{privilege}) {
-        $self->{privilege} = $args->{privilege};
+        $self->{privilege} = uc $args->{privilege};
     }
     return bless $self, $this;
 }
