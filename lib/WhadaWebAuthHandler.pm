@@ -299,11 +299,11 @@ get '/openid/:priv/auth' => [qw/check_authenticated/] => sub {
         my %setup_opts = %$data;
           # 'data' => {
           #             'ns' => 'http://specs.openid.net/auth/2.0',
-          #             'return_to' => 'http://ld-git.data-hotel.net/sessions?_method=post&open_id_complete=1',
-          #             'identity' => 'http://dev01.auth.tools.xen.livedoor:5000/openid/LDPROXY/auth',
-          #             'realm' => 'http://ld-git.data-hotel.net/',
+          #             'return_to' => 'http://openid-provider.local/sessions?_method=post&open_id_complete=1',
+          #             'identity' => 'http:///openid-auth.local/auth',
+          #             'realm' => 'http://myservice.local/',
           #             'assoc_handle' => '1319181636:2euNNAA5d9B6kkgCVfH2:c0579052a7',
-          #             'trust_root' => 'http://ld-git.data-hotel.net/'
+          #             'trust_root' => 'http://myservice.local/'
           #           },
           # 'type' => 'setup'
         #TODO gogogo
